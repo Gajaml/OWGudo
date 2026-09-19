@@ -16,6 +16,15 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
+  const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
+  const isEraser = tool === 'eraser';
+  const maxThickness = isEraser ? 100 : 50;
+  
+  const [strokeInputValue, setStrokeInputValue] = React.useState(currentStrokeWidth.toString());
+
+  React.useEffect(() => {
+    setStrokeInputValue(currentStrokeWidth.toString());
+  }, [currentStrokeWidth, tool]);
 
   React.useEffect(() => {
     // If maps change dynamically (e.g., via polling or hot reload), we can update here.
@@ -99,9 +108,6 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   };
 
   const showThickness = tool !== 'cursor';
-  const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
-  const isEraser = tool === 'eraser';
-  const maxThickness = isEraser ? 100 : 50;
   const eraserMode = useStore((state) => state.eraserMode);
   const setEraserMode = useStore((state) => state.setEraserMode);
 
@@ -158,15 +164,35 @@ export default function TopOptionsBar({ roomId, inRoom }) {
             
             {!(isEraser && eraserMode === 'object') && (
               <>
-                <span className="text-sm text-slate-400">선 두께: {currentStrokeWidth}px</span>
+                <span className="text-sm text-slate-400">선 두께:</span>
                 <input 
                   type="range" 
                   min="1" 
                   max={maxThickness} 
                   value={currentStrokeWidth} 
                   onChange={(e) => setToolStrokeWidth(tool, parseInt(e.target.value))}
-                  className="w-32 accent-blue-500"
+                  className="w-24 accent-blue-500"
                 />
+                <div className="flex items-center space-x-1">
+                  <input
+                    type="number"
+                    className="w-12 bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-sm text-center focus:outline-none focus:border-indigo-500 text-white"
+                    value={strokeInputValue}
+                    onChange={(e) => setStrokeInputValue(e.target.value)}
+                    onBlur={(e) => {
+                      let val = parseInt(e.target.value);
+                      if (isNaN(val)) val = 3;
+                      if (val < 1) val = 1;
+                      if (val > maxThickness) val = maxThickness;
+                      setToolStrokeWidth(tool, val);
+                      setStrokeInputValue(val.toString());
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') e.target.blur();
+                    }}
+                  />
+                  <span className="text-sm text-slate-400">px</span>
+                </div>
               </>
             )}
           </div>
