@@ -13,11 +13,11 @@ export default function LeftToolbar() {
   };
 
   const tools = [
-    { id: 'cursor', icon: MousePointer2, label: '선택 (1)' },
-    { id: 'pen', icon: PenTool, label: '펜 (2)' },
-    { id: 'rect', icon: Square, label: '사각형 (3)' },
-    { id: 'circle', icon: Circle, label: '원형 (4)' },
-    { id: 'eraser', icon: Eraser, label: '지우개 (5)' },
+    { id: 'cursor', icon: MousePointer2, label: '선택', shortcut: '1' },
+    { id: 'pen', icon: PenTool, label: '펜', shortcut: '2' },
+    { id: 'rect', icon: Square, label: '사각형', shortcut: '3' },
+    { id: 'circle', icon: Circle, label: '원형', shortcut: '4' },
+    { id: 'eraser', icon: Eraser, label: '지우개', shortcut: '5' },
   ];
 
   return (
@@ -29,12 +29,15 @@ export default function LeftToolbar() {
           <button
             key={t.id}
             onClick={() => handleToolChange(t.id)}
-            className={`p-3 rounded-lg transition-colors ${
+            className={`relative p-3 rounded-lg transition-colors ${
               isActive ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
-            title={t.label}
+            title={`${t.label} (${t.shortcut})`}
           >
             <Icon size={24} />
+            <span className="absolute bottom-0.5 right-1 text-[10px] font-bold opacity-70 leading-none">
+              {t.shortcut}
+            </span>
           </button>
         );
       })}
