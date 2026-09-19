@@ -3,7 +3,7 @@ import { Group, Circle, Text, Arc, Image as KonvaImage } from 'react-konva';
 import { useStore } from '../store';
 
 export default function HeroNode({ hero }) {
-  const { selectedHeroId, setSelectedHeroId, updateHero, tool } = useStore();
+  const { selectedHeroId, setSelectedHeroId, updateHero, tool, heroIconScale } = useStore();
   const isSelected = selectedHeroId === hero.id;
   const [image, setImage] = useState(null);
 
@@ -70,11 +70,14 @@ export default function HeroNode({ hero }) {
   const strokeColor = isSelected ? '#ffffff' : teamColor;
   const opacity = hero.isDead ? 0.5 : 1;
   const radius = 25;
+  const scale = (heroIconScale || 100) / 100;
 
   return (
     <Group
       x={hero.x}
       y={hero.y}
+      scaleX={scale}
+      scaleY={scale}
       draggable={tool === 'cursor'}
       onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}

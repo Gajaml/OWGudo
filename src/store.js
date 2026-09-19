@@ -17,6 +17,10 @@ export const useStore = create(
       pastedImage: null,
       setPastedImage: (img) => set({ pastedImage: img }),
 
+      // Global settings
+      heroIconScale: 100,
+      setHeroIconScale: (scale) => set({ heroIconScale: scale }),
+
       map: 'blizzard-world',
       setMap: (map) => set({ map }),
 
@@ -116,7 +120,7 @@ export const useStore = create(
     {
       client,
       presenceMapping: { cursor: true, info: true },
-      storageMapping: { map: true, heroes: true, drawings: true, activeTab: true, pastedImage: true },
+      storageMapping: { map: true, heroes: true, drawings: true, activeTab: true, pastedImage: true, heroIconScale: true },
     }
   )
 );

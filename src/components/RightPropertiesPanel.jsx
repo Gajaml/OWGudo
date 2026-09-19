@@ -9,8 +9,14 @@ const ROLE_NAMES = {
 };
 
 export default function RightPropertiesPanel() {
-  const { heroes, selectedHeroId, updateHero } = useStore();
+  const { heroes, selectedHeroId, updateHero, heroIconScale, setHeroIconScale } = useStore();
   const [activeDropdown, setActiveDropdown] = useState(null); // id of the slot
+  const [iconScaleInput, setIconScaleInput] = useState(heroIconScale?.toString() || '100');
+
+  // Update local input if global state changes
+  React.useEffect(() => {
+    setIconScaleInput(heroIconScale?.toString() || '100');
+  }, [heroIconScale]);
 
   const blueTeam = heroes.filter(h => h.team === 'blue');
   const redTeam = heroes.filter(h => h.team === 'red');
@@ -258,6 +264,43 @@ export default function RightPropertiesPanel() {
             
           </div>
         )}
+      </div>
+
+      {/* Global Setting: Hero Icon Scale */}
+      <div className="p-4 border-t border-slate-700 bg-slate-900 shrink-0">
+        <label className="block text-sm font-medium mb-2 text-slate-300">영웅 아이콘 크기 조절</label>
+        <div className="flex items-center space-x-3">
+          <input 
+            type="range" 
+            min="50" 
+            max="200" 
+            value={heroIconScale || 100}
+            onChange={(e) => setHeroIconScale(parseInt(e.target.value))}
+            className="flex-1 accent-indigo-500"
+          />
+          <div className="flex items-center space-x-1">
+            <input 
+              type="number" 
+              className="w-14 bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-sm text-center focus:outline-none focus:border-indigo-500 text-white"
+              value={iconScaleInput}
+              onChange={(e) => setIconScaleInput(e.target.value)}
+              onBlur={(e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 100;
+                if (val < 50) val = 50;
+                if (val > 200) val = 200;
+                setHeroIconScale(val);
+                setIconScaleInput(val.toString());
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.target.blur();
+                }
+              }}
+            />
+            <span className="text-sm text-slate-400">%</span>
+          </div>
+        </div>
       </div>
     </div>
   );
