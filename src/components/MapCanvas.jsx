@@ -260,7 +260,7 @@ export default function MapCanvas() {
         return (
           <div
             key={other.connectionId}
-            className="absolute pointer-events-none z-50 transition-all duration-75"
+            className="absolute pointer-events-none z-50 transition-transform duration-200 ease-out"
             style={{
               transform: `translate(${domX}px, ${domY}px)`,
             }}
