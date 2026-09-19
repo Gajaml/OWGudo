@@ -8,15 +8,10 @@ export default function MapCanvas() {
   const { 
     tool, 
     map, 
-    thickness, 
     toolSettings, 
     heroes, 
     drawings, 
-    currentDrawAction, 
     addDrawing, 
-    updateCurrentDrawing, 
-    finishDrawing, 
-    undo,
     setSelectedHeroId,
     stageScale,
     setStageScale,
@@ -75,7 +70,7 @@ export default function MapCanvas() {
     updateSize();
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  }, [setStageSize]);
 
   // Pan & Zoom state
   const [panState, setPanState] = useState({ isDragging: false, startX: 0, startY: 0, stageX: 0, stageY: 0 });
@@ -220,7 +215,7 @@ export default function MapCanvas() {
     }
   };
 
-  const handleMouseUp = (e) => {
+  const handleMouseUp = () => {
     if (panState.isDragging) {
       setPanState({ ...panState, isDragging: false });
       return;

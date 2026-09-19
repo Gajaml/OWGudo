@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
-import { Trash2, Save, Download, Dices } from 'lucide-react';
+import { Trash2, Dices } from 'lucide-react';
 import { OW_HEROES_DATA } from '../heroData';
 
 // Standard playable heroes to prevent picking lore/concept heroes
@@ -28,11 +28,6 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   React.useEffect(() => {
     setStrokeInputValue(currentStrokeWidth.toString());
   }, [currentStrokeWidth, tool]);
-
-  React.useEffect(() => {
-    // If maps change dynamically (e.g., via polling or hot reload), we can update here.
-    setMaps(OW_MAPS_DATA);
-  }, []);
 
   const handleCreateRoom = () => {
     const newRoomId = Math.random().toString(36).substring(2, 8);
