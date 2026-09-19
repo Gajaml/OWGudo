@@ -9,6 +9,14 @@ export const client = createClient({
 export const useStore = create(
   liveblocks(
     (set) => ({
+      // Tabs: 'map' | 'import'
+      activeTab: 'map',
+      setActiveTab: (tab) => set({ activeTab: tab }),
+
+      // Pasted Image (Base64)
+      pastedImage: null,
+      setPastedImage: (img) => set({ pastedImage: img }),
+
       map: 'blizzard-world',
       setMap: (map) => set({ map }),
 
@@ -108,7 +116,7 @@ export const useStore = create(
     {
       client,
       presenceMapping: { cursor: true, info: true },
-      storageMapping: { map: true, heroes: true, drawings: true },
+      storageMapping: { map: true, heroes: true, drawings: true, activeTab: true, pastedImage: true },
     }
   )
 );

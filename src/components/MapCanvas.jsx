@@ -25,7 +25,9 @@ export default function MapCanvas() {
     stageSize,
     setStageSize,
     removeDrawing,
-    eraserMode
+    eraserMode,
+    activeTab,
+    pastedImage
   } = useStore();
   
   const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
@@ -35,17 +37,31 @@ export default function MapCanvas() {
   const [currentShape, setCurrentShape] = useState(null);
 
   const [mapImage, setMapImage] = useState(null);
+  const [customBgImage, setCustomBgImage] = useState(null);
 
   useEffect(() => {
-    if (map) {
+    if (activeTab === 'map' && map) {
       const mapObj = OW_MAPS_DATA.find(m => m.id === map) || OW_MAPS_DATA[0];
       if (mapObj) {
         const img = new window.Image();
         img.src = `/assets/minimaps/${mapObj.file}`;
-        img.onload = () => setMapImage(img);
+        img.onload = () => {
+          setMapImage(img);
+          setCustomBgImage(null);
+        };
       }
+    } else if (activeTab === 'import' && pastedImage) {
+      const img = new window.Image();
+      img.src = pastedImage;
+      img.onload = () => {
+        setCustomBgImage(img);
+        setMapImage(null);
+      };
+    } else if (activeTab === 'import' && !pastedImage) {
+      setCustomBgImage(null);
+      setMapImage(null);
     }
-  }, [map]);
+  }, [map, activeTab, pastedImage]);
 
   useEffect(() => {
     const updateSize = () => {
@@ -250,9 +266,16 @@ export default function MapCanvas() {
 
   return (
     <div ref={containerRef} className="w-full h-full relative cursor-crosshair bg-slate-950">
-      {!mapImage && (
+      {activeTab === 'map' && !mapImage && (
         <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-xl pointer-events-none">
           {map.toUpperCase()} 맵 로딩 중...
+        </div>
+      )}
+
+      {activeTab === 'import' && !customBgImage && (
+        <div className="absolute inset-0 flex items-center justify-center flex-col text-slate-500 font-bold pointer-events-none">
+          <span className="text-3xl mb-2">Ctrl + V</span>
+          <span className="text-xl">Print Screen으로 캡처한 뒤 붙여넣기 하세요</span>
         </div>
       )}
 
@@ -306,8 +329,11 @@ export default function MapCanvas() {
         y={stagePosition.y}
       >
         <Layer>
-          {mapImage && (
+          {mapImage && activeTab === 'map' && (
             <KonvaImage image={mapImage} x={0} y={0} opacity={0.6} />
+          )}
+          {customBgImage && activeTab === 'import' && (
+            <KonvaImage image={customBgImage} x={0} y={0} opacity={0.8} />
           )}
         </Layer>
         

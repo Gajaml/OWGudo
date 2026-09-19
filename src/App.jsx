@@ -7,7 +7,7 @@ import MapCanvas from './components/MapCanvas';
 import RoomModal from './components/RoomModal';
 
 function App() {
-  const { setTool, setSelectedHeroId, undo, redo, setInfo } = useStore();
+  const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage } = useStore();
   const [inRoom, setInRoom] = useState(false);
   const roomId = new URLSearchParams(window.location.search).get("room");
 
@@ -26,9 +26,61 @@ function App() {
         if (e.shiftKey) redo(); else undo();
       }
     };
+
+    const handlePaste = (e) => {
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              // Resize image if it's too large to save bandwidth (Liveblocks max ~1MB per op)
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const MAX_WIDTH = 1920;
+              const MAX_HEIGHT = 1080;
+              
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              // Compress to 70% quality JPEG
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              
+              setPastedImage(dataUrl);
+              setActiveTab('import');
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+          break; // only process the first image
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, setSelectedHeroId, undo, redo]);
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [setTool, setSelectedHeroId, undo, redo, setPastedImage, setActiveTab]);
 
   const handleJoin = (nickname) => {
     setInfo(nickname);

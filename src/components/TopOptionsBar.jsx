@@ -13,7 +13,7 @@ const VALID_HEROES = [
 import { OW_MAPS_DATA } from '../mapsData';
 
 export default function TopOptionsBar({ roomId, inRoom }) {
-  const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, heroes, setHeroes } = useStore();
+  const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
 
@@ -106,21 +106,39 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   const setEraserMode = useStore((state) => state.setEraserMode);
 
   return (
-    <div className="h-14 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6">
+    <div className="h-14 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6 shrink-0">
       <div className="flex items-center space-x-4">
-        <span className="font-bold text-lg tracking-wide text-orange-500">OW Planner</span>
-        <div className="h-6 w-px bg-slate-700 mx-2"></div>
-        <select 
-          className="bg-slate-800 text-sm border border-slate-600 rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500 text-white"
-          value={map}
-          onChange={(e) => setMap(e.target.value)}
-        >
-          {maps.map(m => (
-            <option key={m.id} value={m.id} disabled={m.isDivider}>
-              {m.name}
-            </option>
-          ))}
-        </select>
+        <span className="font-bold text-lg tracking-wide text-orange-500 shrink-0">OW Planner</span>
+        <div className="h-6 w-px bg-slate-700 mx-2 shrink-0"></div>
+        
+        <div className="flex bg-slate-800 rounded p-1 shrink-0">
+          <button 
+            onClick={() => setActiveTab('map')}
+            className={`px-3 py-1 text-sm rounded transition-colors ${activeTab === 'map' ? 'bg-indigo-600 text-white font-bold shadow' : 'text-slate-400 hover:text-white'}`}
+          >
+            맵 보기
+          </button>
+          <button 
+            onClick={() => setActiveTab('import')}
+            className={`px-3 py-1 text-sm rounded transition-colors ${activeTab === 'import' ? 'bg-indigo-600 text-white font-bold shadow' : 'text-slate-400 hover:text-white'}`}
+          >
+            구도 가져오기
+          </button>
+        </div>
+
+        {activeTab === 'map' && (
+          <select 
+            className="bg-slate-800 text-sm border border-slate-600 rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500 text-white shrink-0"
+            value={map}
+            onChange={(e) => setMap(e.target.value)}
+          >
+            {maps.map(m => (
+              <option key={m.id} value={m.id} disabled={m.isDivider}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        )}
         
         {showThickness && (
           <div className="flex items-center space-x-2 ml-4">
