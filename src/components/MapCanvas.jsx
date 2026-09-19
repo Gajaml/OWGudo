@@ -23,7 +23,9 @@ export default function MapCanvas() {
     stagePosition,
     setStagePosition,
     stageSize,
-    setStageSize
+    setStageSize,
+    removeDrawing,
+    eraserMode
   } = useStore();
   
   const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
@@ -114,6 +116,9 @@ export default function MapCanvas() {
     }
 
     if (tool === 'cursor') return;
+    
+    // Prevent drawing a new stroke if we are in object eraser mode
+    if (tool === 'eraser' && eraserMode === 'object') return;
 
     // Drawing & Eraser logic
     setIsDrawing(true);
@@ -215,20 +220,27 @@ export default function MapCanvas() {
 
   // Render a shape object
   const renderShape = (shape) => {
+    const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
     const commonProps = {
       id: shape.id,
       stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : '#eab308', 
       strokeWidth: shape.strokeWidth || 3,
       globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
-      listening: false, 
+      listening: isObjectEraser, 
+      onPointerDown: () => {
+        if (isObjectEraser) removeDrawing(shape.id);
+      },
+      onPointerEnter: (e) => {
+        if (e.evt.buttons === 1 && isObjectEraser) removeDrawing(shape.id);
+      }
     };
 
     if (shape.type === 'line') {
-      return <Line key={shape.id} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" />;
+      return <Line key={shape.id} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'rect') {
-      return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...commonProps} />;
+      return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'circle') {
-      return <KonvaCircle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...commonProps} />;
+      return <KonvaCircle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     }
     return null;
   };

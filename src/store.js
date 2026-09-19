@@ -78,12 +78,16 @@ export const useStore = create(
       tool: 'cursor',
       setTool: (tool) => set({ tool }),
       
+      // Eraser Mode: 'pixel' | 'object'
+      eraserMode: 'pixel',
+      setEraserMode: (mode) => set({ eraserMode: mode }),
+      
       // Tool specific settings
       toolSettings: {
         pen: { strokeWidth: 3 },
         rect: { strokeWidth: 3 },
         circle: { strokeWidth: 3 },
-        eraser: { strokeWidth: 20 },
+        eraser: { strokeWidth: 50 },
       },
       setToolStrokeWidth: (toolId, width) => set((state) => ({
         toolSettings: {

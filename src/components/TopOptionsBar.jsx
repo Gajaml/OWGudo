@@ -100,6 +100,10 @@ export default function TopOptionsBar({ roomId, inRoom }) {
 
   const showThickness = tool !== 'cursor';
   const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
+  const isEraser = tool === 'eraser';
+  const maxThickness = isEraser ? 100 : 50;
+  const eraserMode = useStore((state) => state.eraserMode);
+  const setEraserMode = useStore((state) => state.setEraserMode);
 
   return (
     <div className="h-14 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6">
@@ -120,15 +124,33 @@ export default function TopOptionsBar({ roomId, inRoom }) {
         
         {showThickness && (
           <div className="flex items-center space-x-2 ml-4">
-            <span className="text-sm text-slate-400">선 두께: {currentStrokeWidth}px</span>
-            <input 
-              type="range" 
-              min="1" 
-              max="50" 
-              value={currentStrokeWidth} 
-              onChange={(e) => setToolStrokeWidth(tool, parseInt(e.target.value))}
-              className="w-32 accent-blue-500"
-            />
+            {isEraser && (
+              <button
+                onClick={() => setEraserMode(eraserMode === 'object' ? 'pixel' : 'object')}
+                className={`text-xs px-2 py-1 rounded transition-colors mr-2 ${
+                  eraserMode === 'object' 
+                    ? 'bg-red-600 text-white font-bold' 
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                title="통째로 지우기 모드 (클릭 시 선 전체가 지워집니다)"
+              >
+                객체 단위 지우기: {eraserMode === 'object' ? 'ON' : 'OFF'}
+              </button>
+            )}
+            
+            {!(isEraser && eraserMode === 'object') && (
+              <>
+                <span className="text-sm text-slate-400">선 두께: {currentStrokeWidth}px</span>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max={maxThickness} 
+                  value={currentStrokeWidth} 
+                  onChange={(e) => setToolStrokeWidth(tool, parseInt(e.target.value))}
+                  className="w-32 accent-blue-500"
+                />
+              </>
+            )}
           </div>
         )}
       </div>
