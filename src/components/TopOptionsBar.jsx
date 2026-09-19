@@ -22,7 +22,7 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   
   const [strokeInputValue, setStrokeInputValue] = React.useState(currentStrokeWidth.toString());
   const [showColorPicker, setShowColorPicker] = React.useState(false);
-  const presetColors = ['#eab308', '#ef4444', '#22c55e', '#06b6d4', '#ec4899'];
+  const presetColors = ['#eab308', '#ff0000', '#00ff00', '#00ffff', '#ff00ff'];
   const currentColor = tool !== 'cursor' && !isEraser ? toolSettings[tool]?.color || '#eab308' : '#eab308';
 
   React.useEffect(() => {
