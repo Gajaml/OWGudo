@@ -134,7 +134,7 @@ export default function TopOptionsBar({ roomId, inRoom }) {
                 }`}
                 title="통째로 지우기 모드 (클릭 시 선 전체가 지워집니다)"
               >
-                객체 단위 지우기: {eraserMode === 'object' ? 'ON' : 'OFF'}
+                잘 지우는 지우개: {eraserMode === 'object' ? 'ON' : 'OFF'}
               </button>
             )}
             
