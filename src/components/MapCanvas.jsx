@@ -148,6 +148,7 @@ export default function MapCanvas() {
         type: 'line', 
         points: [pos.x, pos.y],
         strokeWidth: currentStrokeWidth,
+        stroke: tool === 'eraser' ? 'black' : (toolSettings[tool]?.color || '#eab308'),
         globalCompositeOperation: tool === 'eraser' ? 'destination-out' : 'source-over'
       });
     } else if (tool === 'rect') {
@@ -159,6 +160,7 @@ export default function MapCanvas() {
         width: 0, 
         height: 0,
         strokeWidth: currentStrokeWidth,
+        stroke: toolSettings[tool]?.color || '#eab308',
         globalCompositeOperation: 'source-over'
       });
     } else if (tool === 'circle') {
@@ -169,6 +171,7 @@ export default function MapCanvas() {
         y: pos.y, 
         radius: 0,
         strokeWidth: currentStrokeWidth,
+        stroke: toolSettings[tool]?.color || '#eab308',
         globalCompositeOperation: 'source-over'
       });
     }
@@ -239,7 +242,7 @@ export default function MapCanvas() {
     const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
     const commonProps = {
       id: shape.id,
-      stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : '#eab308', 
+      stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : (shape.stroke || '#eab308'), 
       strokeWidth: shape.strokeWidth || 3,
       globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
       listening: isObjectEraser, 

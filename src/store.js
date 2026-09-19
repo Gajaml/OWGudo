@@ -96,15 +96,21 @@ export const useStore = create(
       
       // Tool specific settings
       toolSettings: {
-        pen: { strokeWidth: 3 },
-        rect: { strokeWidth: 3 },
-        circle: { strokeWidth: 3 },
+        pen: { strokeWidth: 3, color: '#eab308' },
+        rect: { strokeWidth: 3, color: '#eab308' },
+        circle: { strokeWidth: 3, color: '#eab308' },
         eraser: { strokeWidth: 50 },
       },
       setToolStrokeWidth: (toolId, width) => set((state) => ({
         toolSettings: {
           ...state.toolSettings,
-          [toolId]: { strokeWidth: width }
+          [toolId]: { ...state.toolSettings[toolId], strokeWidth: width }
+        }
+      })),
+      setToolColor: (toolId, color) => set((state) => ({
+        toolSettings: {
+          ...state.toolSettings,
+          [toolId]: { ...state.toolSettings[toolId], color: color }
         }
       })),
       

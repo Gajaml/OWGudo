@@ -13,7 +13,7 @@ const VALID_HEROES = [
 import { OW_MAPS_DATA } from '../mapsData';
 
 export default function TopOptionsBar({ roomId, inRoom }) {
-  const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, heroes, setHeroes, activeTab, setActiveTab } = useStore();
+  const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, setToolColor, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
   const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
@@ -21,6 +21,9 @@ export default function TopOptionsBar({ roomId, inRoom }) {
   const maxThickness = isEraser ? 100 : 50;
   
   const [strokeInputValue, setStrokeInputValue] = React.useState(currentStrokeWidth.toString());
+  const [showColorPicker, setShowColorPicker] = React.useState(false);
+  const presetColors = ['#eab308', '#ef4444', '#22c55e', '#06b6d4', '#ec4899'];
+  const currentColor = tool !== 'cursor' && !isEraser ? toolSettings[tool]?.color || '#eab308' : '#eab308';
 
   React.useEffect(() => {
     setStrokeInputValue(currentStrokeWidth.toString());
@@ -193,6 +196,35 @@ export default function TopOptionsBar({ roomId, inRoom }) {
                   />
                   <span className="text-sm text-slate-400">px</span>
                 </div>
+                
+                {/* Color Picker */}
+                {!isEraser && (
+                  <div className="relative ml-2 flex items-center">
+                    <button 
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      className="w-6 h-6 rounded border-2 border-slate-600 shadow-sm transition-transform hover:scale-110 flex-shrink-0"
+                      style={{ backgroundColor: currentColor }}
+                      title="색상 변경"
+                    />
+                    
+                    {showColorPicker && (
+                      <div className="absolute top-10 left-0 flex space-x-2 bg-slate-800 p-2 rounded shadow-lg border border-slate-700 z-50">
+                        {presetColors.map(c => (
+                          <button
+                            key={c}
+                            className={`w-6 h-6 rounded hover:scale-110 transition-transform ${currentColor === c ? 'ring-2 ring-white' : ''}`}
+                            style={{ backgroundColor: c }}
+                            onClick={() => {
+                              setToolColor(tool, c);
+                              setShowColorPicker(false);
+                            }}
+                            title="색상 선택"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
