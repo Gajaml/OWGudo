@@ -16,11 +16,11 @@ export default function HeroNode({ hero }) {
   }, [hero.heroKey]);
 
   const handleDragMove = (e) => {
+    const newX = e.target.x();
+    const newY = e.target.y();
+    
     if (hero.showPath) {
-      const newX = e.target.x();
-      const newY = e.target.y();
       const newPoint = { x: newX, y: newY };
-      
       let newPath = hero.path;
       
       // Throttle point addition (distance > 30px) for a smoother trail
@@ -46,6 +46,8 @@ export default function HeroNode({ hero }) {
         }
       }
       updateHero(hero.id, { path: newPath, x: newX, y: newY });
+    } else {
+      updateHero(hero.id, { x: newX, y: newY });
     }
   };
 

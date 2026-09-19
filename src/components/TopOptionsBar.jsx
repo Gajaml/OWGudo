@@ -12,7 +12,7 @@ const VALID_HEROES = [
 
 import { OW_MAPS_DATA } from '../mapsData';
 
-export default function TopOptionsBar() {
+export default function TopOptionsBar({ roomId, inRoom }) {
   const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, heroes, setHeroes } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
@@ -21,6 +21,16 @@ export default function TopOptionsBar() {
     // If maps change dynamically (e.g., via polling or hot reload), we can update here.
     setMaps(OW_MAPS_DATA);
   }, []);
+
+  const handleCreateRoom = () => {
+    const newRoomId = Math.random().toString(36).substring(2, 8);
+    window.location.href = `/?room=${newRoomId}`;
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert('초대 링크가 복사되었습니다!');
+  };
 
   const handleRandomize = () => {
     // 1. Create a deep copy of the heroes array
@@ -110,7 +120,7 @@ export default function TopOptionsBar() {
         
         {showThickness && (
           <div className="flex items-center space-x-2 ml-4">
-            <span className="text-sm text-slate-400">두께: {currentStrokeWidth}px</span>
+            <span className="text-sm text-slate-400">선 두께: {currentStrokeWidth}px</span>
             <input 
               type="range" 
               min="1" 
@@ -124,10 +134,28 @@ export default function TopOptionsBar() {
       </div>
 
       <div className="flex items-center space-x-3">
+        {inRoom ? (
+          <button 
+            onClick={handleCopyLink}
+            className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-green-600 hover:bg-green-500 text-white transition-colors"
+            title="초대 링크 복사하기"
+          >
+            <span>🔗 링크 복사</span>
+          </button>
+        ) : (
+          <button 
+            onClick={handleCreateRoom}
+            className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            title="새로운 작전 회의실 만들기"
+          >
+            <span>🌐 방 만들기</span>
+          </button>
+        )}
+        <div className="h-6 w-px bg-slate-700 mx-1"></div>
         <button 
           onClick={handleRandomize}
           className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
-          title="팀/위치 랜덤 배치"
+          title="영웅/위치 랜덤 배치"
         >
           <Dices size={16} />
           <span>랜덤 배치</span>
@@ -135,10 +163,10 @@ export default function TopOptionsBar() {
         <button 
           onClick={clearDrawings}
           className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-slate-800 hover:bg-red-900/50 hover:text-red-400 transition-colors"
-          title="모든 드로잉 지우기"
+          title="초기화"
         >
           <Trash2 size={16} />
-          <span>드로잉 초기화</span>
+          <span>초기화</span>
         </button>
       </div>
     </div>

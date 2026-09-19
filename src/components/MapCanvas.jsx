@@ -154,6 +154,13 @@ export default function MapCanvas() {
   };
 
   const handleMouseMove = (e) => {
+    // 1. Cursor Tracking (Multiplayer)
+    const stage = e.target.getStage();
+    const pos = getRelativePointerPosition(stage);
+    
+    // throttle sending cursor slightly or just send it
+    useStore.getState().setCursor({ x: pos.x, y: pos.y });
+
     if (panState.isDragging) {
       const dx = e.evt.clientX - panState.startX;
       const dy = e.evt.clientY - panState.startY;
@@ -165,8 +172,6 @@ export default function MapCanvas() {
     }
 
     if (!isDrawing || !currentShape) return;
-    
-    const pos = getRelativePointerPosition(e.target.getStage());
     
     if (tool === 'pen' || tool === 'eraser') {
       setCurrentShape(prev => ({
@@ -204,6 +209,10 @@ export default function MapCanvas() {
     }
   };
 
+  const handleMouseLeave = () => {
+    useStore.getState().setCursor(null);
+  };
+
   // Render a shape object
   const renderShape = (shape) => {
     const commonProps = {
@@ -211,7 +220,7 @@ export default function MapCanvas() {
       stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : '#eab308', 
       strokeWidth: shape.strokeWidth || 3,
       globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
-      listening: false, // Shapes don't need to listen to events for the new pixel eraser
+      listening: false, 
     };
 
     if (shape.type === 'line') {
@@ -224,13 +233,51 @@ export default function MapCanvas() {
     return null;
   };
 
+  // Liveblocks presence
+  const others = useStore((state) => state.liveblocks?.others) || [];
+
   return (
     <div ref={containerRef} className="w-full h-full relative cursor-crosshair bg-slate-950">
       {!mapImage && (
         <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-xl pointer-events-none">
-          {map.toUpperCase()} 탑뷰 맵 로딩 중...
+          {map.toUpperCase()} 맵 로딩 중...
         </div>
       )}
+
+      {/* Multiplayer Cursors Overlay */}
+      {others.map((other) => {
+        if (other.presence?.cursor == null) return null;
+        
+        // Map local canvas coordinates to absolute screen coordinates
+        const { x, y } = other.presence.cursor;
+        const domX = x * stageScale + stagePosition.x;
+        const domY = y * stageScale + stagePosition.y;
+        
+        // Unique color based on connectionId
+        const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
+        const color = colors[other.connectionId % colors.length];
+
+        return (
+          <div
+            key={other.connectionId}
+            className="absolute pointer-events-none z-50 transition-all duration-75"
+            style={{
+              transform: `translate(${domX}px, ${domY}px)`,
+            }}
+          >
+            {/* Custom SVG Arrow */}
+            <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="white" strokeWidth="2" className="drop-shadow-md">
+              <path d="M5.65 2.11L21.75 18.21C22.61 19.07 22.04 20.5 20.82 20.5H14.1L12.56 26.69C12.35 27.53 11.23 27.7 10.74 26.96L1.87 13.67C1.19 12.65 1.54 11.23 2.59 10.62L12.06 5.16C13.2 4.5 14.54 5.3 14.57 6.61L14.7 10.9L5.65 2.11Z" fill={color} />
+            </svg>
+            <div 
+              className="mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-white whitespace-nowrap shadow-md opacity-90 inline-block"
+              style={{ backgroundColor: color }}
+            >
+              {other.presence.info || "익명"}
+            </div>
+          </div>
+        );
+      })}
 
       <Stage
         width={stageSize.width || 800}
@@ -238,6 +285,7 @@ export default function MapCanvas() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onWheel={handleWheel}
         onContextMenu={(e) => e.evt.preventDefault()}
         scaleX={stageScale}
