@@ -135,13 +135,18 @@ export default function TopOptionsBar({ roomId, inRoom }) {
 
       <div className="flex items-center space-x-3">
         {inRoom ? (
-          <button 
-            onClick={handleCopyLink}
-            className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-green-600 hover:bg-green-500 text-white transition-colors"
-            title="초대 링크 복사하기"
-          >
-            <span>🔗 링크 복사</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-emerald-400 font-bold bg-slate-800 px-3 py-1.5 rounded border border-emerald-900" title="방 코드">
+              코드: {roomId}
+            </span>
+            <button 
+              onClick={handleCopyLink}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-green-600 hover:bg-green-500 text-white transition-colors"
+              title="초대 링크 복사하기"
+            >
+              <span>🔗 링크 복사</span>
+            </button>
+          </div>
         ) : (
           <button 
             onClick={handleCreateRoom}

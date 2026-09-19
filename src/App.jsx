@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useStore } from './store';
+import React, { useEffect, useState, useRef } from 'react';
+import { useStore, client } from './store';
 import LeftToolbar from './components/LeftToolbar';
 import TopOptionsBar from './components/TopOptionsBar';
 import RightPropertiesPanel from './components/RightPropertiesPanel';
@@ -10,6 +10,7 @@ function App() {
   const { setTool, setSelectedHeroId, undo, redo, setInfo } = useStore();
   const [inRoom, setInRoom] = useState(false);
   const roomId = new URLSearchParams(window.location.search).get("room");
+  const leaveRoomRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -32,17 +33,18 @@ function App() {
 
   const handleJoin = (nickname) => {
     setInfo(nickname);
-    useStore.liveblocks.enterRoom(roomId, { initialPresence: { cursor: null, info: nickname } });
+    const { leave } = client.enterRoom(roomId, { initialPresence: { cursor: null, info: nickname } });
+    leaveRoomRef.current = leave;
     setInRoom(true);
   };
 
   useEffect(() => {
     return () => {
-      if (roomId && inRoom) {
-        useStore.liveblocks.leaveRoom(roomId);
+      if (leaveRoomRef.current) {
+        leaveRoomRef.current();
       }
     };
-  }, [roomId, inRoom]);
+  }, []);
 
   const isJoining = roomId && !inRoom;
 
