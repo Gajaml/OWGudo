@@ -35,6 +35,8 @@ export const useStore = create(
       setStageScale: (stageScale) => set({ stageScale }),
       stagePosition: { x: 0, y: 0 },
       setStagePosition: (stagePosition) => set({ stagePosition }),
+      stageRotation: 0,
+      setStageRotation: (stageRotation) => set({ stageRotation }),
       stageSize: { width: 0, height: 0 },
       setStageSize: (stageSize) => set({ stageSize }),
       

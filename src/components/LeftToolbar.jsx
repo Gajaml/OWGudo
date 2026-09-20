@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
-import { MousePointer2, PenTool, Square, Circle, Eraser } from 'lucide-react';
+import { MousePointer2, PenTool, Square, Circle, Eraser, RotateCw } from 'lucide-react';
 import HelpModal from './HelpModal';
 
 export default function LeftToolbar() {
@@ -14,6 +14,7 @@ export default function LeftToolbar() {
     { id: 'rect', icon: Square, label: '사각형', shortcut: 'E' },
     { id: 'circle', icon: Circle, label: '원/타원', shortcut: 'R' },
     { id: 'eraser', icon: Eraser, label: '지우개', shortcut: 'T' },
+    { id: 'rotate', icon: RotateCw, label: '맵 회전', shortcut: 'Y' },
   ];
 
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
@@ -48,6 +49,10 @@ export default function LeftToolbar() {
     eraser: {
       desc: '그려진 선이나 도형을 클릭하거나 드래그하여 지웁니다.',
       visual: '/assets/tools/eraser.png'
+    },
+    rotate: {
+      desc: '화면을 드래그하여 맵을 360도 회전시킵니다.',
+      visual: '/assets/tools/cursor.png'
     }
   };
 

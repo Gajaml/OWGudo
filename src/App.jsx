@@ -22,7 +22,7 @@ function App() {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         return;
       }
-      const toolMap = { 'q': 'cursor', 'w': 'pen', 'e': 'rect', 'r': 'circle', 't': 'eraser' };
+      const toolMap = { 'q': 'cursor', 'w': 'pen', 'e': 'rect', 'r': 'circle', 't': 'eraser', 'y': 'rotate' };
       if (toolMap[e.key.toLowerCase()]) {
         const newTool = toolMap[e.key.toLowerCase()];
         setTool(newTool);

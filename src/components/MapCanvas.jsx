@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage, Transformer } from 'react-konva';
+import { Stage, Layer, Group, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage, Transformer } from 'react-konva';
 import { useStore } from '../store';
 import HeroNode from './HeroNode';
 import { OW_MAPS_DATA } from '../mapsData';
@@ -21,6 +21,8 @@ export default function MapCanvas() {
     setStagePosition,
     stageSize,
     setStageSize,
+    stageRotation,
+    setStageRotation,
     removeDrawing,
     eraserMode,
     activeTab,
@@ -32,6 +34,7 @@ export default function MapCanvas() {
   const containerRef = useRef(null);
   const stageRef = useRef(null);
   const trRef = useRef(null);
+  const worldGroupRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentShape, setCurrentShape] = useState(null);
   const [selectedShapeId, setSelectedShapeId] = useState(null);
@@ -153,6 +156,12 @@ export default function MapCanvas() {
   };
 
   const getRelativePointerPosition = (stage) => {
+    if (worldGroupRef.current) {
+      const transform = worldGroupRef.current.getAbsoluteTransform().copy();
+      transform.invert();
+      const pos = stage.getPointerPosition();
+      return transform.point(pos);
+    }
     const pointerPosition = stage.getPointerPosition();
     return {
       x: (pointerPosition.x - stage.x()) / stage.scaleX(),
@@ -168,10 +177,27 @@ export default function MapCanvas() {
     if (e.evt.button === 1 || e.evt.button === 2) {
       setPanState({
         isDragging: true,
+        isRotating: false,
         startX: e.evt.clientX,
         startY: e.evt.clientY,
         stageX: stagePosition.x,
         stageY: stagePosition.y
+      });
+      return;
+    }
+
+    if (tool === 'rotate') {
+      const centerX = (stageSize.width || window.innerWidth) / 2;
+      const centerY = (stageSize.height || window.innerHeight) / 2;
+      const startAngle = Math.atan2(e.evt.clientY - centerY, e.evt.clientX - centerX);
+      
+      setPanState({
+        isDragging: true,
+        isRotating: true,
+        startAngle: startAngle,
+        startRotation: stageRotation,
+        centerX,
+        centerY
       });
       return;
     }
@@ -182,6 +208,7 @@ export default function MapCanvas() {
       setSelectedShapeId(null);
       setPanState({
         isDragging: true,
+        isRotating: false,
         startX: e.evt.clientX,
         startY: e.evt.clientY,
         stageX: stagePosition.x,
@@ -253,12 +280,18 @@ export default function MapCanvas() {
     useStore.getState().setCursor({ x: pos.x, y: pos.y });
 
     if (panState.isDragging) {
-      const dx = e.evt.clientX - panState.startX;
-      const dy = e.evt.clientY - panState.startY;
-      setStagePosition({
-        x: panState.stageX + dx,
-        y: panState.stageY + dy
-      });
+      if (panState.isRotating) {
+        const currentAngle = Math.atan2(e.evt.clientY - panState.centerY, e.evt.clientX - panState.centerX);
+        const diff = (currentAngle - panState.startAngle) * (180 / Math.PI);
+        setStageRotation(panState.startRotation + diff);
+      } else {
+        const dx = e.evt.clientX - panState.startX;
+        const dy = e.evt.clientY - panState.startY;
+        setStagePosition({
+          x: panState.stageX + dx,
+          y: panState.stageY + dy
+        });
+      }
       return;
     }
 
@@ -446,12 +479,25 @@ export default function MapCanvas() {
 
       {/* Multiplayer Cursors Overlay */}
       {others.map((other) => {
+        const pivotX = mapImage ? mapImage.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
+        const pivotY = mapImage ? mapImage.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
         if (other.presence?.cursor == null) return null;
         
         // Map local canvas coordinates to absolute screen coordinates
         const { x, y } = other.presence.cursor;
-        const domX = x * stageScale + stagePosition.x;
-        const domY = y * stageScale + stagePosition.y;
+        
+        let dx = x - pivotX;
+        let dy = y - pivotY;
+        const angle = (stageRotation * Math.PI) / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const rx = dx * cos - dy * sin;
+        const ry = dx * sin + dy * cos;
+        const worldX = rx + pivotX;
+        const worldY = ry + pivotY;
+
+        const domX = worldX * stageScale + stagePosition.x;
+        const domY = worldY * stageScale + stagePosition.y;
         
         // Check if cursor is off-screen
         const isOffScreen = 
@@ -521,6 +567,10 @@ export default function MapCanvas() {
         );
       })}
 
+      {(() => {
+        const pivotX = mapImage ? mapImage.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
+        const pivotY = mapImage ? mapImage.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
+        return (
       <Stage
         ref={stageRef}
         width={stageSize.width || 800}
@@ -537,15 +587,18 @@ export default function MapCanvas() {
         y={stagePosition.y}
       >
         <Layer>
+          <Group ref={worldGroupRef} rotation={stageRotation} x={pivotX} y={pivotY} offsetX={pivotX} offsetY={pivotY}>
           {mapImage && activeTab === 'map' && (
             <KonvaImage image={mapImage} x={0} y={0} opacity={0.6} />
           )}
           {customBgImage && activeTab === 'import' && (
             <KonvaImage image={customBgImage} x={0} y={0} opacity={0.8} />
           )}
+          </Group>
         </Layer>
         
         <Layer>
+          <Group rotation={stageRotation} x={pivotX} y={pivotY} offsetX={pivotX} offsetY={pivotY}>
           {/* Render committed drawings */}
           {drawings.map(d => renderShape(d, null))}
           {/* Render currently drawing shape */}
@@ -561,9 +614,11 @@ export default function MapCanvas() {
               }}
             />
           )}
+          </Group>
         </Layer>
         
         <Layer>
+          <Group rotation={stageRotation} x={pivotX} y={pivotY} offsetX={pivotX} offsetY={pivotY}>
           {/* Render Hero Paths */}
           {heroes.filter(h => h.heroName && h.showPath && h.path && h.path.length > 0).map(hero => {
             // Anchor to hero center, then reverse path so dashes are static relative to the hero
@@ -598,8 +653,11 @@ export default function MapCanvas() {
           {heroes.filter(h => h.heroName).map(hero => (
             <HeroNode key={hero.id} hero={hero} />
           ))}
+          </Group>
         </Layer>
       </Stage>
+      );
+      })()}
     </div>
   );
 }
