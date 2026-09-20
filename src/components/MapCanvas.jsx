@@ -160,6 +160,9 @@ export default function MapCanvas() {
     };
   };
 
+  const currentShapeRef = useRef(null);
+  const currentShapeNodeRef = useRef(null);
+
   const handleMouseDown = (e) => {
     // Pan with middle (1) or right (2) mouse button
     if (e.evt.button === 1 || e.evt.button === 2) {
@@ -197,18 +200,20 @@ export default function MapCanvas() {
     const pos = getRelativePointerPosition(e.target.getStage());
     const id = `draw_${Date.now()}`;
     
+    let initialShape = null;
+
     // Eraser is basically a pen tool with destination-out composite operation
     if (tool === 'pen' || tool === 'eraser') {
-      setCurrentShape({ 
+      initialShape = { 
         id, 
         type: 'line', 
         points: [pos.x, pos.y],
         strokeWidth: currentStrokeWidth,
         stroke: tool === 'eraser' ? 'black' : (toolSettings[tool]?.color || '#eab308'),
         globalCompositeOperation: tool === 'eraser' ? 'destination-out' : 'source-over'
-      });
+      };
     } else if (tool === 'rect') {
-      setCurrentShape({ 
+      initialShape = { 
         id, 
         type: 'rect', 
         x: pos.x, 
@@ -218,9 +223,9 @@ export default function MapCanvas() {
         strokeWidth: currentStrokeWidth,
         stroke: toolSettings[tool]?.color || '#eab308',
         globalCompositeOperation: 'source-over'
-      });
+      };
     } else if (tool === 'circle') {
-      setCurrentShape({ 
+      initialShape = { 
         id, 
         type: 'circle', 
         startX: pos.x,
@@ -232,8 +237,11 @@ export default function MapCanvas() {
         strokeWidth: currentStrokeWidth,
         stroke: toolSettings[tool]?.color || '#eab308',
         globalCompositeOperation: 'source-over'
-      });
+      };
     }
+    
+    currentShapeRef.current = initialShape;
+    setCurrentShape(initialShape);
   };
 
   const handleMouseMove = (e) => {
@@ -254,29 +262,36 @@ export default function MapCanvas() {
       return;
     }
 
-    if (!isDrawing || !currentShape) return;
+    if (!isDrawing || !currentShapeRef.current) return;
+    
+    const shape = currentShapeRef.current;
     
     if (tool === 'pen' || tool === 'eraser') {
-      setCurrentShape(prev => ({
-        ...prev,
-        points: [...prev.points, pos.x, pos.y]
-      }));
+      shape.points.push(pos.x, pos.y);
+      if (currentShapeNodeRef.current) {
+        currentShapeNodeRef.current.points(shape.points);
+        currentShapeNodeRef.current.getLayer().batchDraw();
+      }
     } else if (tool === 'rect') {
-      setCurrentShape(prev => ({
-        ...prev,
-        width: pos.x - prev.x,
-        height: pos.y - prev.y
-      }));
+      shape.width = pos.x - shape.x;
+      shape.height = pos.y - shape.y;
+      if (currentShapeNodeRef.current) {
+        currentShapeNodeRef.current.width(shape.width);
+        currentShapeNodeRef.current.height(shape.height);
+        currentShapeNodeRef.current.getLayer().batchDraw();
+      }
     } else if (tool === 'circle') {
-      setCurrentShape(prev => {
-        return {
-          ...prev,
-          x: (prev.startX + pos.x) / 2,
-          y: (prev.startY + pos.y) / 2,
-          radiusX: Math.abs(pos.x - prev.startX) / 2,
-          radiusY: Math.abs(pos.y - prev.startY) / 2
-        };
-      });
+      shape.x = (shape.startX + pos.x) / 2;
+      shape.y = (shape.startY + pos.y) / 2;
+      shape.radiusX = Math.abs(pos.x - shape.startX) / 2;
+      shape.radiusY = Math.abs(pos.y - shape.startY) / 2;
+      if (currentShapeNodeRef.current) {
+        currentShapeNodeRef.current.x(shape.x);
+        currentShapeNodeRef.current.y(shape.y);
+        currentShapeNodeRef.current.radiusX(shape.radiusX);
+        currentShapeNodeRef.current.radiusY(shape.radiusY);
+        currentShapeNodeRef.current.getLayer().batchDraw();
+      }
     }
   };
 
@@ -286,23 +301,25 @@ export default function MapCanvas() {
       return;
     }
 
-    if (isDrawing && currentShape) {
+    if (isDrawing && currentShapeRef.current) {
+      const finalShape = { ...currentShapeRef.current };
       let shouldAdd = true;
-      if (currentShape.type === 'rect' && currentShape.width === 0 && currentShape.height === 0) {
+      if (finalShape.type === 'rect' && finalShape.width === 0 && finalShape.height === 0) {
         shouldAdd = false;
       }
-      if (currentShape.type === 'circle' && currentShape.radiusX === 0 && currentShape.radiusY === 0) {
+      if (finalShape.type === 'circle' && finalShape.radiusX === 0 && finalShape.radiusY === 0) {
         shouldAdd = false;
       }
-      if (currentShape.type === 'line' && currentShape.points.length <= 2) {
+      if (finalShape.type === 'line' && finalShape.points.length <= 2) {
         shouldAdd = false;
       }
 
       if (shouldAdd) {
-        addDrawing(currentShape);
+        addDrawing(finalShape);
       }
       setIsDrawing(false);
       setCurrentShape(null);
+      currentShapeRef.current = null;
     }
   };
 
@@ -311,7 +328,7 @@ export default function MapCanvas() {
   };
 
   // Render a shape object
-  const renderShape = (shape) => {
+  const renderShape = (shape, ref = null) => {
     const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
     const canBeSelected = shape.type === 'rect' || shape.type === 'circle';
     const isSelectable = tool === 'cursor' && canBeSelected;
@@ -386,15 +403,15 @@ export default function MapCanvas() {
     }
 
     if (shape.type === 'line') {
-      return <Line key={shape.id} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      return <Line key={shape.id} ref={ref} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'rect') {
-      return <Rect key={shape.id} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      return <Rect key={shape.id} ref={ref} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'circle') {
       if (shape.radiusX !== undefined && shape.radiusY !== undefined) {
-        return <KonvaEllipse key={shape.id} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+        return <KonvaEllipse key={shape.id} ref={ref} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
       }
       // Fallback for older shapes
-      return <KonvaCircle key={shape.id} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      return <KonvaCircle key={shape.id} ref={ref} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     }
     return null;
   };
@@ -402,11 +419,21 @@ export default function MapCanvas() {
   // Liveblocks presence
   const others = useStore((state) => state.liveblocks?.others) || [];
 
+  // Listen to cameraSync
+  const cameraSync = useStore((state) => state.cameraSync);
+  useEffect(() => {
+    if (cameraSync) {
+      // Small timeout to prevent immediate state conflicts if needed, but direct is fine
+      setStageScale(cameraSync.scale);
+      setStagePosition({ x: cameraSync.x, y: cameraSync.y });
+    }
+  }, [cameraSync, setStageScale, setStagePosition]);
+
   return (
-    <div ref={containerRef} className="w-full h-full relative cursor-crosshair bg-slate-950">
+    <div ref={containerRef} className="w-full h-full relative cursor-crosshair bg-slate-950 overflow-hidden">
       {activeTab === 'map' && !mapImage && (
         <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-xl pointer-events-none">
-          {map.toUpperCase()} 맵 로딩 중...
+          {map?.toUpperCase()} 맵 로딩 중...
         </div>
       )}
 
@@ -426,9 +453,51 @@ export default function MapCanvas() {
         const domX = x * stageScale + stagePosition.x;
         const domY = y * stageScale + stagePosition.y;
         
+        // Check if cursor is off-screen
+        const isOffScreen = 
+          domX < 0 || 
+          domX > (stageSize.width || window.innerWidth) || 
+          domY < 0 || 
+          domY > (stageSize.height || window.innerHeight);
+
         // Unique color based on connectionId
         const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
         const color = colors[other.connectionId % colors.length];
+
+        if (isOffScreen) {
+          // Calculate clamped position
+          const padding = 20;
+          const clampedX = Math.max(padding, Math.min((stageSize.width || window.innerWidth) - padding, domX));
+          const clampedY = Math.max(padding, Math.min((stageSize.height || window.innerHeight) - padding, domY));
+          
+          // Calculate angle for the arrow
+          const centerX = (stageSize.width || window.innerWidth) / 2;
+          const centerY = (stageSize.height || window.innerHeight) / 2;
+          const angle = Math.atan2(domY - centerY, domX - centerX) * (180 / Math.PI);
+
+          return (
+            <div
+              key={other.connectionId}
+              className="absolute pointer-events-none z-50 transition-transform duration-[25ms] ease-out flex flex-col items-center"
+              style={{
+                transform: `translate(${clampedX - 12}px, ${clampedY - 12}px)`,
+              }}
+            >
+              <div style={{ transform: `rotate(${angle}deg)` }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="drop-shadow-md">
+                  <path d="M12 2L22 12L12 22" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12H22" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div 
+                className="mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white whitespace-nowrap shadow-md opacity-80"
+                style={{ backgroundColor: color }}
+              >
+                {other.presence.info || "익명"}
+              </div>
+            </div>
+          );
+        }
 
         return (
           <div
@@ -478,9 +547,9 @@ export default function MapCanvas() {
         
         <Layer>
           {/* Render committed drawings */}
-          {drawings.map(renderShape)}
+          {drawings.map(d => renderShape(d, null))}
           {/* Render currently drawing shape */}
-          {currentShape && renderShape(currentShape)}
+          {currentShape && renderShape(currentShape, currentShapeNodeRef)}
           {/* Transformer for selection */}
           {selectedShapeId && (
             <Transformer

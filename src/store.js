@@ -127,6 +127,10 @@ export const useStore = create(
       selectedHeroId: null,
       setSelectedHeroId: (id) => set({ selectedHeroId: id }),
 
+      // Sync camera across clients
+      cameraSync: null,
+      setCameraSync: (cameraSync) => set({ cameraSync }),
+
       // Liveblocks Presence
       cursor: null,
       info: null,
@@ -136,7 +140,7 @@ export const useStore = create(
     {
       client,
       presenceMapping: { cursor: true, info: true },
-      storageMapping: { map: true, heroes: true, drawings: true, activeTab: true, pastedImage: true, heroIconScale: true },
+      storageMapping: { map: true, heroes: true, drawings: true, activeTab: true, pastedImage: true, heroIconScale: true, cameraSync: true },
     }
   )
 );

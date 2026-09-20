@@ -148,6 +148,18 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
     setHeroes(newHeroes);
   };
 
+  const handleGatherEveryone = () => {
+    const stageScale = useStore.getState().stageScale || 1;
+    const stagePosition = useStore.getState().stagePosition || { x: 0, y: 0 };
+    
+    useStore.getState().setCameraSync({
+      x: stagePosition.x,
+      y: stagePosition.y,
+      scale: stageScale,
+      timestamp: Date.now() // to trigger updates even if same pos
+    });
+  };
+
   const showThickness = tool !== 'cursor' && map !== null;
   const eraserMode = useStore((state) => state.eraserMode);
   const setEraserMode = useStore((state) => state.setEraserMode);
@@ -325,7 +337,14 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
               title="현재 위치로 영웅 이동"
             >
               <Move size={16} />
-              <span>중앙으로 이동</span>
+              <span>영웅 데려오기</span>
+            </button>
+            <button 
+              onClick={handleGatherEveryone}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-purple-600 hover:bg-purple-500 text-white transition-colors"
+              title="다른 사람들의 화면을 내 화면으로 동기화합니다"
+            >
+              <span>모두 모이기</span>
             </button>
           </>
         )}
