@@ -39,6 +39,26 @@ export const useStore = create(
       setStageRotation: (stageRotation) => set({ stageRotation }),
       stageSize: { width: 0, height: 0 },
       setStageSize: (stageSize) => set({ stageSize }),
+      mapCenter: { x: 960, y: 540 },
+      setMapCenter: (mapCenter) => set({ mapCenter }),
+      
+      stageToWorld: (stageX, stageY) => {
+        const state = get();
+        const stageRotation = state.stageRotation || 0;
+        const mapCenter = state.mapCenter || { x: 960, y: 540 };
+        
+        const dx = stageX - mapCenter.x;
+        const dy = stageY - mapCenter.y;
+        
+        const angle = (-stageRotation * Math.PI) / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        
+        return {
+          x: dx * cos - dy * sin + mapCenter.x,
+          y: dx * sin + dy * cos + mapCenter.y
+        };
+      },
       
       // Heroes Data (10 slots)
       heroes: [

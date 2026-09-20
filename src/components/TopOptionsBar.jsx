@@ -94,8 +94,12 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
         baseX = isBlue ? viewCenterX - 300 + Math.random() * 50 : viewCenterX + 300 - Math.random() * 50; // Backline
       }
       
-      slot.x = baseX + (Math.random() * 40 - 20);
-      slot.y = baseY;
+      const stageX = baseX + (Math.random() * 40 - 20);
+      const stageY = baseY;
+      
+      const worldPos = useStore.getState().stageToWorld(stageX, stageY);
+      slot.x = worldPos.x;
+      slot.y = worldPos.y;
       
       // Reset statuses
       slot.isDead = false;
@@ -119,6 +123,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
     
     const viewCenterX = (-stagePosition.x + stageSize.width / 2) / stageScale;
     const viewCenterY = (-stagePosition.y + stageSize.height / 2) / stageScale;
+    const worldViewCenter = useStore.getState().stageToWorld(viewCenterX, viewCenterY);
 
     // Get active heroes
     const activeHeroes = newHeroes.filter(h => h.heroKey);
@@ -137,8 +142,8 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
     const centroidY = sumY / activeHeroes.length;
     
     // Calculate offset to move centroid to view center
-    const offsetX = viewCenterX - centroidX;
-    const offsetY = viewCenterY - centroidY;
+    const offsetX = worldViewCenter.x - centroidX;
+    const offsetY = worldViewCenter.y - centroidY;
     
     // Apply offset to all active heroes
     newHeroes.forEach(slot => {

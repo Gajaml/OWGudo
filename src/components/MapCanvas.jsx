@@ -23,6 +23,7 @@ export default function MapCanvas() {
     setStageSize,
     stageRotation,
     setStageRotation,
+    setMapCenter,
     removeDrawing,
     eraserMode,
     activeTab,
@@ -70,6 +71,7 @@ export default function MapCanvas() {
         img.onload = () => {
           setMapImage(img);
           setCustomBgImage(null);
+          setMapCenter({ x: img.width / 2, y: img.height / 2 });
           
           const currentStageSize = useStore.getState().stageSize;
           if (currentStageSize.width > 0 && currentStageSize.height > 0) {
@@ -93,6 +95,7 @@ export default function MapCanvas() {
       img.onload = () => {
         setCustomBgImage(img);
         setMapImage(null);
+        setMapCenter({ x: img.width / 2, y: img.height / 2 });
         
         const currentStageSize = useStore.getState().stageSize;
         if (currentStageSize.width > 0 && currentStageSize.height > 0) {

@@ -197,8 +197,11 @@ export default function TeamCompModal({ onClose }) {
           
           // Place hero relative to the view center
           if (formation[i]) {
-            slot.x = viewCenterX + formation[i].dx;
-            slot.y = viewCenterY + formation[i].dy;
+            const stageX = viewCenterX + formation[i].dx;
+            const stageY = viewCenterY + formation[i].dy;
+            const worldPos = useStore.getState().stageToWorld(stageX, stageY);
+            slot.x = worldPos.x;
+            slot.y = worldPos.y;
           }
 
           // Reset statuses
