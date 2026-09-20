@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage, Transformer } from 'react-konva';
 import { useStore } from '../store';
 import HeroNode from './HeroNode';
 import { OW_MAPS_DATA } from '../mapsData';
@@ -12,6 +12,7 @@ export default function MapCanvas() {
     heroes, 
     drawings, 
     addDrawing, 
+    updateDrawing,
     setSelectedHeroId,
     stageScale,
     setStageScale,
@@ -28,8 +29,30 @@ export default function MapCanvas() {
   const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
 
   const containerRef = useRef(null);
+  const stageRef = useRef(null);
+  const trRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentShape, setCurrentShape] = useState(null);
+  const [selectedShapeId, setSelectedShapeId] = useState(null);
+
+  useEffect(() => {
+    if (tool !== 'cursor') {
+      setSelectedShapeId(null);
+    }
+  }, [tool]);
+
+  useEffect(() => {
+    if (selectedShapeId && trRef.current && stageRef.current) {
+      const node = stageRef.current.findOne('#' + selectedShapeId);
+      if (node) {
+        trRef.current.nodes([node]);
+        trRef.current.getLayer().batchDraw();
+      }
+    } else if (trRef.current) {
+      trRef.current.nodes([]);
+      trRef.current.getLayer().batchDraw();
+    }
+  }, [selectedShapeId, drawings]);
 
   const [mapImage, setMapImage] = useState(null);
   const [customBgImage, setCustomBgImage] = useState(null);
@@ -152,6 +175,7 @@ export default function MapCanvas() {
     // If clicking on empty space with cursor, deselect hero and start pan
     if (e.target === e.target.getStage() && tool === 'cursor') {
       setSelectedHeroId(null);
+      setSelectedShapeId(null);
       setPanState({
         isDragging: true,
         startX: e.evt.clientX,
@@ -275,30 +299,77 @@ export default function MapCanvas() {
   // Render a shape object
   const renderShape = (shape) => {
     const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
+    const isSelectable = tool === 'cursor' && (shape.type === 'rect' || shape.type === 'circle');
+    const isSelected = selectedShapeId === shape.id;
+    
     const commonProps = {
       id: shape.id,
       stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : (shape.stroke || '#eab308'), 
       strokeWidth: shape.strokeWidth || 3,
       globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
-      listening: isObjectEraser, 
-      onPointerDown: () => {
-        if (isObjectEraser) removeDrawing(shape.id);
+      listening: isObjectEraser || isSelectable, 
+      draggable: isSelected,
+      onPointerDown: (e) => {
+        if (isObjectEraser) {
+          removeDrawing(shape.id);
+        } else if (isSelectable) {
+          setSelectedShapeId(shape.id);
+        }
       },
       onPointerEnter: (e) => {
         if (e.evt.buttons === 1 && isObjectEraser) removeDrawing(shape.id);
+      },
+      onDragEnd: (e) => {
+        updateDrawing(shape.id, {
+          x: e.target.x(),
+          y: e.target.y()
+        });
+      },
+      onTransformEnd: (e) => {
+        const node = e.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
+        node.scaleX(1);
+        node.scaleY(1);
+        
+        if (shape.type === 'rect') {
+          updateDrawing(shape.id, {
+            x: node.x(),
+            y: node.y(),
+            width: Math.max(5, node.width() * scaleX),
+            height: Math.max(5, node.height() * scaleY),
+            rotation: node.rotation()
+          });
+        } else if (shape.type === 'circle') {
+          updateDrawing(shape.id, {
+            x: node.x(),
+            y: node.y(),
+            radiusX: Math.max(5, (shape.radiusX || shape.radius) * scaleX),
+            radiusY: Math.max(5, (shape.radiusY || shape.radius) * scaleY),
+            rotation: node.rotation()
+          });
+        }
       }
     };
+    
+    // Add existing properties
+    if (shape.rotation) commonProps.rotation = shape.rotation;
+    // For rect/line, x and y might not be present or handled differently
+    if (shape.type !== 'line') {
+      commonProps.x = shape.x;
+      commonProps.y = shape.y;
+    }
 
     if (shape.type === 'line') {
       return <Line key={shape.id} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'rect') {
-      return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      return <Rect key={shape.id} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'circle') {
       if (shape.radiusX !== undefined && shape.radiusY !== undefined) {
-        return <KonvaEllipse key={shape.id} x={shape.x} y={shape.y} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+        return <KonvaEllipse key={shape.id} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
       }
       // Fallback for older shapes
-      return <KonvaCircle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      return <KonvaCircle key={shape.id} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     }
     return null;
   };
@@ -357,6 +428,7 @@ export default function MapCanvas() {
       })}
 
       <Stage
+        ref={stageRef}
         width={stageSize.width || 800}
         height={stageSize.height || 600}
         onMouseDown={handleMouseDown}
@@ -384,6 +456,17 @@ export default function MapCanvas() {
           {drawings.map(renderShape)}
           {/* Render currently drawing shape */}
           {currentShape && renderShape(currentShape)}
+          {/* Transformer for selection */}
+          {selectedShapeId && (
+            <Transformer
+              ref={trRef}
+              enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
+              boundBoxFunc={(oldBox, newBox) => {
+                if (newBox.width < 5 || newBox.height < 5) return oldBox;
+                return newBox;
+              }}
+            />
+          )}
         </Layer>
         
         <Layer>

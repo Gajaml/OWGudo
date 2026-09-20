@@ -77,6 +77,10 @@ export const useStore = create(
           redoStack: []
         };
       }),
+      updateDrawing: (id, updates) => set((state) => {
+        const newDrawings = state.drawings.map(d => d.id === id ? { ...d, ...updates } : d);
+        return { drawings: newDrawings };
+      }),
       undo: () => set((state) => {
         if (state.undoStack.length === 0) return state;
         const previous = state.undoStack[state.undoStack.length - 1];
