@@ -119,7 +119,7 @@ export default function MapCanvas() {
     const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
     
     // limit scale
-    if (newScale < 0.2 || newScale > 5) return;
+    if (newScale < 0.01 || newScale > 10) return;
 
     setStageScale(newScale);
     setStagePosition({
@@ -149,9 +149,16 @@ export default function MapCanvas() {
       return;
     }
 
-    // If clicking on empty space with cursor, deselect hero
+    // If clicking on empty space with cursor, deselect hero and start pan
     if (e.target === e.target.getStage() && tool === 'cursor') {
       setSelectedHeroId(null);
+      setPanState({
+        isDragging: true,
+        startX: e.evt.clientX,
+        startY: e.evt.clientY,
+        stageX: stagePosition.x,
+        stageY: stagePosition.y
+      });
       return;
     }
 
