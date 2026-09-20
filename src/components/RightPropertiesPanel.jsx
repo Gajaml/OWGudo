@@ -273,7 +273,7 @@ export default function RightPropertiesPanel() {
           <input 
             type="range" 
             min="50" 
-            max="200" 
+            max="300" 
             value={heroIconScale || 100}
             onChange={(e) => setHeroIconScale(parseInt(e.target.value))}
             className="flex-1 accent-indigo-500"
@@ -288,7 +288,7 @@ export default function RightPropertiesPanel() {
                 let val = parseInt(e.target.value);
                 if (isNaN(val)) val = 100;
                 if (val < 50) val = 50;
-                if (val > 200) val = 200;
+                if (val > 300) val = 300;
                 setHeroIconScale(val);
                 setIconScaleInput(val.toString());
               }}
