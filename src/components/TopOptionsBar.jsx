@@ -234,11 +234,19 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
           >
             <option value="" disabled hidden>맵 선택</option>
             <option value="lobby">--- 로비로 돌아가기 ---</option>
-            {maps.map(m => (
-              <option key={m.id} value={m.id} disabled={m.isDivider}>
-                {m.name}
-              </option>
-            ))}
+            {['호위', '혼합', '쟁탈', '밀기', '플래시포인트', '점령 (구 맵)'].map(mode => {
+              const modeMaps = maps.filter(m => m.mode === mode).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+              if (modeMaps.length === 0) return null;
+              return (
+                <optgroup key={mode} label={`--- ${mode} ---`}>
+                  {modeMaps.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
           </select>
         )}
         
