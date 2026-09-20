@@ -7,6 +7,7 @@ import { OW_MAPS_DATA } from '../mapsData';
 export default function MapCanvas() {
   const { 
     tool, 
+    setTool,
     map, 
     toolSettings, 
     heroes, 
@@ -286,7 +287,20 @@ export default function MapCanvas() {
     }
 
     if (isDrawing && currentShape) {
-      addDrawing(currentShape);
+      let shouldAdd = true;
+      if (currentShape.type === 'rect' && currentShape.width === 0 && currentShape.height === 0) {
+        shouldAdd = false;
+      }
+      if (currentShape.type === 'circle' && currentShape.radiusX === 0 && currentShape.radiusY === 0) {
+        shouldAdd = false;
+      }
+      if (currentShape.type === 'line' && currentShape.points.length <= 2) {
+        shouldAdd = false;
+      }
+
+      if (shouldAdd) {
+        addDrawing(currentShape);
+      }
       setIsDrawing(false);
       setCurrentShape(null);
     }
@@ -299,16 +313,27 @@ export default function MapCanvas() {
   // Render a shape object
   const renderShape = (shape) => {
     const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
-    const isSelectable = tool === 'cursor' && (shape.type === 'rect' || shape.type === 'circle');
+    const canBeSelected = shape.type === 'rect' || shape.type === 'circle';
+    const isSelectable = tool === 'cursor' && canBeSelected;
     const isSelected = selectedShapeId === shape.id;
     
+    const handleShapeDoubleClick = (e) => {
+      if (canBeSelected && tool !== 'cursor') {
+        setTool('cursor');
+        setSelectedShapeId(shape.id);
+        e.cancelBubble = true;
+      }
+    };
+
     const commonProps = {
       id: shape.id,
       stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : (shape.stroke || '#eab308'), 
       strokeWidth: shape.strokeWidth || 3,
       globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
-      listening: isObjectEraser || isSelectable, 
+      listening: isObjectEraser || canBeSelected, 
       draggable: isSelected,
+      onDblClick: handleShapeDoubleClick,
+      onDblTap: handleShapeDoubleClick,
       onPointerDown: (e) => {
         if (isObjectEraser) {
           removeDrawing(shape.id);
