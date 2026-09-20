@@ -3,58 +3,37 @@ import { useStore } from '../store';
 import { OW_MAPS_DATA } from '../mapsData';
 
 const ModeIcon = ({ mode }) => {
+  let iconName = '';
   switch (mode) {
     case '호위':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <path d="M4 10h6v-3l7 5-7 5v-3H4z" />
-          <rect x="18" y="7" width="2" height="10" />
-        </svg>
-      );
+      iconName = 'escort';
+      break;
     case '혼합':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <path fillRule="evenodd" d="M10 12a4 4 0 10-8 0 4 4 0 008 0zm2 0a6 6 0 11-12 0 6 6 0 0112 0z" clipRule="evenodd" />
-          <path d="M12 10h4v-3l6 5-6 5v-3h-4z" />
-        </svg>
-      );
+      iconName = 'hybrid';
+      break;
     case '쟁탈':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <polygon points="12,3 15,4.5 15,7.5 12,9 9,7.5 9,4.5" />
-          <polygon points="7,11 10,12.5 10,15.5 7,17 4,15.5 4,12.5" />
-          <polygon points="17,11 20,12.5 20,15.5 17,17 14,15.5 14,12.5" />
-        </svg>
-      );
+      iconName = 'control';
+      break;
     case '밀기':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <path d="M9 7L4 12l5 5v-3h2v-4H9z" />
-          <path d="M15 7l5 5-5 5v-3h-2v-4h2z" />
-          <rect x="11" y="5" width="2" height="14" />
-        </svg>
-      );
+      iconName = 'push';
+      break;
     case '플래시포인트':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <circle cx="12" cy="12" r="3" />
-          <polygon points="12,6 10,2 14,2" />
-          <polygon points="12,18 10,22 14,22" />
-          <polygon points="6,12 2,10 2,14" />
-          <polygon points="18,12 22,10 22,14" />
-        </svg>
-      );
+      iconName = 'flashpoint';
+      break;
     case '점령 (구 맵)':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 mr-3 text-white">
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="12" r="3" />
-          <rect x="10" y="11" width="4" height="2" />
-        </svg>
-      );
+      iconName = 'assault';
+      break;
     default:
       return null;
   }
+  
+  return (
+    <img 
+      src={`/assets/modes/${iconName}.png`} 
+      alt={`${mode} 아이콘`} 
+      className="w-8 h-8 mr-3 object-contain"
+    />
+  );
 };
 
 export default function Lobby() {
