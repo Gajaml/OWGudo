@@ -1,7 +1,7 @@
 export const HERO_ALIASES = {
   // Tank
-  "dmon": ["디몬"],
-  "dva": ["디바"],
+  "dmon": ["디몬", "디", "Dmon", "dmon"],
+  "dva": ["디바", "디", "dva"],
   "doomfist": ["둠"],
   "wrecking-ball": ["볼"],
   "winston": ["윈"],
@@ -12,8 +12,8 @@ export const HERO_ALIASES = {
   "sigma": ["시"],
   "junker-queen": ["퀸"],
   "zarya": ["자"],
-  "reinhardt": ["라인"],
-  "ramattra": ["라마"],
+  "reinhardt": ["라인", "라"],
+  "ramattra": ["라마", "라"],
   "roadhog": ["호그", "호"],
   
   // Damage
