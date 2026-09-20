@@ -43,6 +43,21 @@ export default function MapCanvas() {
         img.onload = () => {
           setMapImage(img);
           setCustomBgImage(null);
+          
+          const currentStageSize = useStore.getState().stageSize;
+          if (currentStageSize.width > 0 && currentStageSize.height > 0) {
+            const scaleX = currentStageSize.width / img.width;
+            const scaleY = currentStageSize.height / img.height;
+            const fitScale = Math.min(scaleX, scaleY) * 0.95;
+            
+            const finalScale = Math.max(0.05, Math.min(fitScale, 5));
+            
+            setStageScale(finalScale);
+            setStagePosition({
+              x: (currentStageSize.width - img.width * finalScale) / 2,
+              y: (currentStageSize.height - img.height * finalScale) / 2
+            });
+          }
         };
       }
     } else if (activeTab === 'import' && pastedImage) {
@@ -51,6 +66,20 @@ export default function MapCanvas() {
       img.onload = () => {
         setCustomBgImage(img);
         setMapImage(null);
+        
+        const currentStageSize = useStore.getState().stageSize;
+        if (currentStageSize.width > 0 && currentStageSize.height > 0) {
+          const scaleX = currentStageSize.width / img.width;
+          const scaleY = currentStageSize.height / img.height;
+          const fitScale = Math.min(scaleX, scaleY) * 0.95;
+          const finalScale = Math.max(0.05, Math.min(fitScale, 5));
+          
+          setStageScale(finalScale);
+          setStagePosition({
+            x: (currentStageSize.width - img.width * finalScale) / 2,
+            y: (currentStageSize.height - img.height * finalScale) / 2
+          });
+        }
       };
     } else if (activeTab === 'import' && !pastedImage) {
       setCustomBgImage(null);
