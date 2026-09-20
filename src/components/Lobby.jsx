@@ -29,7 +29,7 @@ const ModeIcon = ({ mode }) => {
   
   return (
     <img 
-      src={`/assets/modes/${iconName}.svg`} 
+      src={`/assets/modes/${iconName}.png`} 
       alt={`${mode} 아이콘`} 
       className="w-7 h-7 mr-3 object-contain"
     />
