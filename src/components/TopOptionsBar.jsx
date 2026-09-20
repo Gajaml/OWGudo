@@ -29,6 +29,36 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
     setStrokeInputValue(currentStrokeWidth.toString());
   }, [currentStrokeWidth, tool]);
 
+  // [ ] 단축키로 두께 조절 (Ctrl+[, Ctrl+]는 10단위)
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      // input / textarea 포커스 중에는 무시
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      // 두께 UI가 표시 중인 툴에서만 동작
+      if (!showThickness) return;
+      // object 지우개 모드일 때는 두께 없음
+      if (isEraser && eraserMode === 'object') return;
+
+      if (e.key === '[' || e.key === ']') {
+        e.preventDefault();
+        const step = e.ctrlKey ? 10 : 1;
+        const current = useStore.getState().toolSettings[tool]?.strokeWidth ?? 10;
+        const max = isEraser ? 100 : 50;
+        if (e.key === '[') {
+          const next = Math.max(1, current - step);
+          setToolStrokeWidth(tool, next);
+        } else {
+          const next = Math.min(max, current + step);
+          setToolStrokeWidth(tool, next);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [tool, showThickness, isEraser, eraserMode, setToolStrokeWidth]);
+
   const handleCreateRoom = () => {
     if (onCreateRoomRequest) {
       onCreateRoomRequest();
