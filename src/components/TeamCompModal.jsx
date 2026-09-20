@@ -194,13 +194,17 @@ export default function TeamCompModal({ onClose }) {
               setActiveInput(team);
               setQuery('');
             }}
+            onClick={(e) => e.stopPropagation()}
             value={activeInput === team ? query : ''}
             onChange={(e) => setQuery(e.target.value)}
           />
 
           {/* Hero List Dropdown */}
           {activeInput === team && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded shadow-xl z-20 max-h-60 overflow-y-auto grid grid-cols-5 sm:grid-cols-8 gap-2 p-3">
+            <div 
+              className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded shadow-xl z-20 max-h-60 overflow-y-auto grid grid-cols-5 sm:grid-cols-8 gap-2 p-3"
+              onClick={(e) => e.stopPropagation()}
+            >
               {getFilteredList(team).map(hero => {
                 const isSelected = selected.find(s => s.key === hero.key);
                 return (
@@ -263,15 +267,15 @@ export default function TeamCompModal({ onClose }) {
       onClick={() => setActiveInput(null)} // Close dropdowns on outside click
     >
       <div 
-        className="bg-slate-800 p-8 rounded-lg shadow-xl w-full max-w-3xl border border-slate-700 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()} // Prevent closing dropdowns when clicking inside modal
+        className="bg-slate-800 p-8 rounded-lg shadow-xl w-full max-w-4xl border border-slate-700 min-h-[750px] flex flex-col"
+        onClick={() => setActiveInput(null)} // Close dropdowns when clicking inside empty modal space
       >
         <h2 className="text-2xl font-bold mb-6 text-white text-center">조합 입력</h2>
         
         {renderTeamSection('team1')}
         {renderTeamSection('team2')}
 
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="flex justify-end gap-4 mt-auto pt-8">
           <button 
             className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded font-bold transition-colors"
             onClick={onClose}
