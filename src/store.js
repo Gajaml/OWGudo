@@ -52,20 +52,39 @@ export const useStore = create(
       
       // Drawings & History
       drawings: [],
+      undoStack: [],
+      redoStack: [],
       setDrawings: (drawings) => set({ drawings }),
-      addDrawing: (drawing) => set((state) => ({ drawings: [...state.drawings, drawing] })),
-      clearDrawings: () => set({ drawings: [] }),
-      removeDrawing: (id) => set((state) => ({ 
-        drawings: state.drawings.filter(d => d.id !== id)
-      })),
-      undo: () => {
-        const room = get().liveblocks?.room;
-        if (room) room.history.undo();
-      },
-      redo: () => {
-        const room = get().liveblocks?.room;
-        if (room) room.history.redo();
-      },
+      addDrawing: (drawing) => set((state) => {
+        const newUndo = [...state.undoStack, state.drawings].slice(-20);
+        return { drawings: [...state.drawings, drawing], undoStack: newUndo, redoStack: [] };
+      }),
+      clearDrawings: () => set((state) => {
+        const newUndo = [...state.undoStack, state.drawings].slice(-20);
+        return { drawings: [], undoStack: newUndo, redoStack: [] };
+      }),
+      removeDrawing: (id) => set((state) => {
+        const newUndo = [...state.undoStack, state.drawings].slice(-20);
+        return { 
+          drawings: state.drawings.filter(d => d.id !== id),
+          undoStack: newUndo,
+          redoStack: []
+        };
+      }),
+      undo: () => set((state) => {
+        if (state.undoStack.length === 0) return state;
+        const previous = state.undoStack[state.undoStack.length - 1];
+        const newUndo = state.undoStack.slice(0, -1);
+        const newRedo = [state.drawings, ...state.redoStack];
+        return { drawings: previous, undoStack: newUndo, redoStack: newRedo };
+      }),
+      redo: () => set((state) => {
+        if (state.redoStack.length === 0) return state;
+        const next = state.redoStack[0];
+        const newRedo = state.redoStack.slice(1);
+        const newUndo = [...state.undoStack, state.drawings];
+        return { drawings: next, undoStack: newUndo, redoStack: newRedo };
+      }),
       
       // Tool Selection
       tool: 'cursor',
