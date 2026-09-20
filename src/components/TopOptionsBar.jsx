@@ -12,7 +12,7 @@ const VALID_HEROES = [
 
 import { OW_MAPS_DATA } from '../mapsData';
 
-export default function TopOptionsBar({ roomId, inRoom }) {
+export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
   const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, setToolColor, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
@@ -259,12 +259,11 @@ export default function TopOptionsBar({ roomId, inRoom }) {
           <span>랜덤 배치</span>
         </button>
         <button 
-          onClick={clearDrawings}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-slate-800 hover:bg-red-900/50 hover:text-red-400 transition-colors"
-          title="초기화"
+          onClick={onOpenTeamComp}
+          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          title="조합 입력"
         >
-          <Trash2 size={16} />
-          <span>초기화</span>
+          <span>조합 입력</span>
         </button>
       </div>
     </div>

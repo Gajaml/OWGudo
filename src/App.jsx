@@ -5,10 +5,12 @@ import TopOptionsBar from './components/TopOptionsBar';
 import RightPropertiesPanel from './components/RightPropertiesPanel';
 import MapCanvas from './components/MapCanvas';
 import RoomModal from './components/RoomModal';
+import TeamCompModal from './components/TeamCompModal';
 
 function App() {
   const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage } = useStore();
   const [inRoom, setInRoom] = useState(false);
+  const [isTeamCompOpen, setIsTeamCompOpen] = useState(false);
   const roomId = new URLSearchParams(window.location.search).get("room");
 
   useEffect(() => {
@@ -101,7 +103,8 @@ function App() {
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
       {isJoining && <RoomModal onJoin={handleJoin} />}
-      <TopOptionsBar roomId={roomId} inRoom={inRoom} />
+      {isTeamCompOpen && <TeamCompModal onClose={() => setIsTeamCompOpen(false)} />}
+      <TopOptionsBar roomId={roomId} inRoom={inRoom} onOpenTeamComp={() => setIsTeamCompOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
         <LeftToolbar />
         <main className="flex-1 relative bg-slate-800 overflow-hidden">
