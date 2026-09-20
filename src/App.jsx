@@ -40,15 +40,6 @@ function App() {
         if (hero && hero.heroName) {
           state.setTool('cursor');
           state.setSelectedHeroId(heroId);
-          
-          const width = state.stageSize.width || window.innerWidth;
-          const height = state.stageSize.height || window.innerHeight;
-          const scale = state.stageScale;
-          
-          state.setStagePosition({
-            x: width / 2 - hero.x * scale,
-            y: height / 2 - hero.y * scale
-          });
         }
         return;
       }
