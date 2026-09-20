@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
-import { Trash2, Dices } from 'lucide-react';
+import { Trash2, Dices, Move } from 'lucide-react';
 import { OW_HEROES_DATA } from '../heroData';
 
 // Standard playable heroes to prevent picking lore/concept heroes
@@ -100,6 +100,48 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
       slot.showPath = false;
       slot.ultPercent = 0;
       slot.stats = { e: 0, a: 0, d: 0 };
+    });
+
+    setHeroes(newHeroes);
+  };
+
+  const handleMoveToCenter = () => {
+    const newHeroes = JSON.parse(JSON.stringify(heroes));
+    
+    // Calculate center of current view
+    const stageScale = useStore.getState().stageScale || 1;
+    const stagePosition = useStore.getState().stagePosition || { x: 0, y: 0 };
+    const stageSize = useStore.getState().stageSize || { width: 800, height: 600 };
+    
+    const viewCenterX = (-stagePosition.x + stageSize.width / 2) / stageScale;
+    const viewCenterY = (-stagePosition.y + stageSize.height / 2) / stageScale;
+
+    // Get active heroes
+    const activeHeroes = newHeroes.filter(h => h.heroKey);
+    
+    if (activeHeroes.length === 0) return;
+
+    // Calculate current centroid of active heroes
+    let sumX = 0;
+    let sumY = 0;
+    activeHeroes.forEach(h => {
+      sumX += h.x;
+      sumY += h.y;
+    });
+    
+    const centroidX = sumX / activeHeroes.length;
+    const centroidY = sumY / activeHeroes.length;
+    
+    // Calculate offset to move centroid to view center
+    const offsetX = viewCenterX - centroidX;
+    const offsetY = viewCenterY - centroidY;
+    
+    // Apply offset to all active heroes
+    newHeroes.forEach(slot => {
+      if (slot.heroKey) {
+        slot.x += offsetX;
+        slot.y += offsetY;
+      }
     });
 
     setHeroes(newHeroes);
@@ -264,6 +306,14 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
           title="조합 입력"
         >
           <span>조합 입력</span>
+        </button>
+        <button 
+          onClick={handleMoveToCenter}
+          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+          title="현재 위치로 영웅 이동"
+        >
+          <Move size={16} />
+          <span>중앙으로 이동</span>
         </button>
       </div>
     </div>
