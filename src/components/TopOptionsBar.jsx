@@ -16,7 +16,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
   const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, setToolColor, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
-  const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 10;
+  const currentStrokeWidth = tool !== 'cursor' ? (toolSettings[tool]?.strokeWidth || 10) : 10;
   const isEraser = tool === 'eraser';
   const maxThickness = isEraser ? 100 : 50;
   

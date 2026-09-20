@@ -29,7 +29,7 @@ export default function MapCanvas() {
     pastedImage
   } = useStore();
   
-  const currentStrokeWidth = tool !== 'cursor' ? toolSettings[tool].strokeWidth : 3;
+  const currentStrokeWidth = tool !== 'cursor' ? (toolSettings[tool]?.strokeWidth || 3) : 3;
 
   const containerRef = useRef(null);
   const stageRef = useRef(null);

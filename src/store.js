@@ -112,6 +112,8 @@ export const useStore = create(
         rect: { strokeWidth: 10, color: '#eab308' },
         circle: { strokeWidth: 10, color: '#eab308' },
         eraser: { strokeWidth: 50 },
+        rotate: { strokeWidth: 3 }, // dummy value to prevent undefined errors
+        cursor: { strokeWidth: 3 },
       },
       setToolStrokeWidth: (toolId, width) => set((state) => ({
         toolSettings: {
