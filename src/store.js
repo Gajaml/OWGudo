@@ -24,7 +24,7 @@ export const useStore = create(
       map: null,
       setMap: (map) => set((state) => {
         if (!map) return { map: null };
-        const lowResMaps = ['esperanca', 'new-junk-city', 'suravasa', 'samoa'];
+        const lowResMaps = ['esperanca', 'new-junk-city', 'suravasa', 'samoa', 'midtown', 'circuitroyal', 'newqueenstreet', 'runasapi', 'colosseo', 'aatlis'];
         const isLowRes = lowResMaps.includes(map);
         // Set scale to 150 for high-res maps, 100 for low-res maps
         return { map, heroIconScale: isLowRes ? 100 : 150 };

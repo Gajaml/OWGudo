@@ -41,7 +41,7 @@ export default function Lobby() {
                       src={`/assets/maps/${m.id}.jpg`} 
                       alt={m.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = `/assets/minimaps/${m.id}.jpg`; }}
+                      onError={(e) => { e.target.src = `/assets/minimaps/${m.file}`; }}
                     />
                   </div>
                   <span className="mt-3 text-lg font-bold text-slate-200 group-hover:text-indigo-400 text-center">

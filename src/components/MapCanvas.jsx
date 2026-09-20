@@ -59,42 +59,66 @@ export default function MapCanvas() {
     }
   }, [selectedShapeId, drawings]);
 
-  const [mapImage, setMapImage] = useState(null);
+  const [mapImages, setMapImages] = useState([]);
+  const [mapDimensions, setMapDimensions] = useState({ width: 960, height: 540 });
   const [customBgImage, setCustomBgImage] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'map' && map) {
       const mapObj = OW_MAPS_DATA.find(m => m.id === map) || OW_MAPS_DATA[0];
       if (mapObj) {
-        const img = new window.Image();
-        img.src = `/assets/minimaps/${mapObj.file}`;
-        img.onload = () => {
-          setMapImage(img);
+        const filesToLoad = mapObj.files || [mapObj.file];
+        
+        Promise.all(filesToLoad.map(filename => {
+          return new Promise((resolve) => {
+            const img = new window.Image();
+            img.src = `/assets/minimaps/${filename}`;
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+          });
+        })).then(loadedImages => {
+          const validImages = loadedImages.filter(img => img !== null);
+          if (validImages.length === 0) return;
+          
+          let currentY = 0;
+          let maxWidth = 0;
+          const imageObjects = validImages.map(img => {
+            const obj = { img, yOffset: currentY };
+            currentY += img.height;
+            if (img.width > maxWidth) maxWidth = img.width;
+            return obj;
+          });
+          
+          const totalHeight = currentY;
+          
+          setMapImages(imageObjects);
+          setMapDimensions({ width: maxWidth, height: totalHeight });
           setCustomBgImage(null);
-          setMapCenter({ x: img.width / 2, y: img.height / 2 });
+          setMapCenter({ x: maxWidth / 2, y: totalHeight / 2 });
           
           const currentStageSize = useStore.getState().stageSize;
           if (currentStageSize.width > 0 && currentStageSize.height > 0) {
-            const scaleX = currentStageSize.width / img.width;
-            const scaleY = currentStageSize.height / img.height;
+            const scaleX = currentStageSize.width / maxWidth;
+            const scaleY = currentStageSize.height / totalHeight;
             const fitScale = Math.min(scaleX, scaleY) * 0.95;
             
             const finalScale = Math.max(0.05, Math.min(fitScale, 5));
             
             setStageScale(finalScale);
             setStagePosition({
-              x: (currentStageSize.width - img.width * finalScale) / 2,
-              y: (currentStageSize.height - img.height * finalScale) / 2
+              x: (currentStageSize.width - maxWidth * finalScale) / 2,
+              y: (currentStageSize.height - totalHeight * finalScale) / 2
             });
           }
-        };
+        });
       }
     } else if (activeTab === 'import' && pastedImage) {
       const img = new window.Image();
       img.src = pastedImage;
       img.onload = () => {
         setCustomBgImage(img);
-        setMapImage(null);
+        setMapImages([]);
+        setMapDimensions({ width: img.width, height: img.height });
         setMapCenter({ x: img.width / 2, y: img.height / 2 });
         
         const currentStageSize = useStore.getState().stageSize;
@@ -113,7 +137,7 @@ export default function MapCanvas() {
       };
     } else if (activeTab === 'import' && !pastedImage) {
       setCustomBgImage(null);
-      setMapImage(null);
+      setMapImages([]);
     }
   }, [map, activeTab, pastedImage]);
 
@@ -467,7 +491,7 @@ export default function MapCanvas() {
 
   return (
     <div ref={containerRef} className="w-full h-full relative cursor-crosshair bg-slate-950 overflow-hidden">
-      {activeTab === 'map' && !mapImage && (
+      {activeTab === 'map' && mapImages.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-slate-700 font-bold text-xl pointer-events-none">
           {map?.toUpperCase()} 맵 로딩 중...
         </div>
@@ -482,8 +506,8 @@ export default function MapCanvas() {
 
       {/* Multiplayer Cursors Overlay */}
       {others.map((other) => {
-        const pivotX = mapImage ? mapImage.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
-        const pivotY = mapImage ? mapImage.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
+        const pivotX = mapImages.length > 0 ? mapDimensions.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
+        const pivotY = mapImages.length > 0 ? mapDimensions.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
         if (other.presence?.cursor == null) return null;
         
         // Map local canvas coordinates to absolute screen coordinates
@@ -571,8 +595,8 @@ export default function MapCanvas() {
       })}
 
       {(() => {
-        const pivotX = mapImage ? mapImage.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
-        const pivotY = mapImage ? mapImage.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
+        const pivotX = mapImages.length > 0 ? mapDimensions.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
+        const pivotY = mapImages.length > 0 ? mapDimensions.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
         return (
       <Stage
         ref={stageRef}
@@ -591,9 +615,9 @@ export default function MapCanvas() {
       >
         <Layer>
           <Group ref={worldGroupRef} rotation={stageRotation} x={pivotX} y={pivotY} offsetX={pivotX} offsetY={pivotY}>
-          {mapImage && activeTab === 'map' && (
-            <KonvaImage image={mapImage} x={0} y={0} opacity={0.6} />
-          )}
+          {activeTab === 'map' && mapImages.map((obj, i) => (
+            <KonvaImage key={i} image={obj.img} x={0} y={obj.yOffset} opacity={0.6} />
+          ))}
           {customBgImage && activeTab === 'import' && (
             <KonvaImage image={customBgImage} x={0} y={0} opacity={0.8} />
           )}
