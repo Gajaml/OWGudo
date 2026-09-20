@@ -18,6 +18,7 @@ export default function LeftToolbar() {
 
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [clickedTool, setClickedTool] = React.useState(null);
+  const [hideToolPopovers, setHideToolPopovers] = React.useState(() => localStorage.getItem('hideToolPopovers') === 'true');
 
   React.useEffect(() => {
     // Check if the user has chosen not to see the help modal again
@@ -52,15 +53,18 @@ export default function LeftToolbar() {
 
   const handleToolChange = (newTool) => {
     setTool(newTool);
-    setClickedTool(newTool);
+    if (!hideToolPopovers) {
+      setClickedTool(newTool);
+      
+      // 4초 후 말풍선 자동 닫기
+      setTimeout(() => {
+        setClickedTool((current) => current === newTool ? null : current);
+      }, 4000);
+    }
+    
     if (newTool !== 'cursor') {
       setSelectedHeroId(null);
     }
-    
-    // 4초 후 말풍선 자동 닫기
-    setTimeout(() => {
-      setClickedTool((current) => current === newTool ? null : current);
-    }, 4000);
   };
 
   return (
@@ -92,18 +96,57 @@ export default function LeftToolbar() {
 
               {/* Click Popover (말풍선) */}
               {isClicked && (
-                <div className="absolute left-16 top-1/2 -translate-y-1/2 ml-2 w-64 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in duration-200 pointer-events-none">
+                <div 
+                  className={`absolute left-16 ml-2 w-64 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in duration-200 ${
+                    t.id === 'cursor' ? 'top-0' : 'top-1/2 -translate-y-1/2'
+                  }`}
+                >
                   {/* 말풍선 꼬리 */}
-                  <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-0 h-0 border-y-8 border-y-transparent border-r-8 border-r-slate-600">
+                  <div 
+                    className={`absolute -left-2 w-0 h-0 border-y-8 border-y-transparent border-r-8 border-r-slate-600 ${
+                      t.id === 'cursor' ? 'top-6 -translate-y-1/2' : 'top-1/2 -translate-y-1/2'
+                    }`}
+                  >
                     <div className="absolute -top-[7px] -left-[6px] w-0 h-0 border-y-[7px] border-y-transparent border-r-[7px] border-r-slate-800" />
                   </div>
                   
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setClickedTool(null);
+                    }}
+                    className="absolute top-2 right-2 text-slate-400 hover:text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+
                   <h4 className="font-bold text-white text-sm mb-2">{t.label}</h4>
                   <p className="text-slate-300 text-xs mb-3 leading-relaxed">
                     {toolDescriptions[t.id].desc}
                   </p>
                   <div className="bg-slate-900/80 rounded border border-slate-700/50 p-2 text-[10px] text-slate-400 italic text-center">
                     {toolDescriptions[t.id].visual}
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2 border-t border-slate-700 pt-2">
+                    <input 
+                      type="checkbox" 
+                      id={`hideTool-${t.id}`}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        if (checked) {
+                          localStorage.setItem('hideToolPopovers', 'true');
+                          setHideToolPopovers(true);
+                          setClickedTool(null);
+                        }
+                      }} 
+                      className="rounded border-slate-600 bg-slate-700 w-3 h-3 accent-blue-500 cursor-pointer" 
+                    />
+                    <label htmlFor={`hideTool-${t.id}`} className="text-[10px] text-slate-400 cursor-pointer hover:text-slate-300">
+                      다시 보지 않기
+                    </label>
                   </div>
                 </div>
               )}
