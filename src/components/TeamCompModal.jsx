@@ -210,17 +210,20 @@ export default function TeamCompModal({ onClose }) {
                 return (
                   <div
                     key={hero.key}
-                    className={`relative cursor-pointer hover:scale-105 transition-transform ${isSelected ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
+                    className={`relative cursor-pointer hover:scale-105 transition-transform rounded border-2 ${isSelected ? 'border-green-500' : 'border-slate-600'} ${isSelected ? 'opacity-100' : 'opacity-80 hover:opacity-100'} overflow-hidden`}
                     onClick={() => handleHeroToggle(team, hero)}
                   >
                     <img 
                       src={hero.portrait} 
                       alt={hero.name} 
-                      className={`w-full aspect-square object-cover rounded border-2 ${isSelected ? 'border-green-500' : 'border-slate-600'}`} 
+                      className="w-full aspect-square object-cover block" 
                       title={hero.name}
                     />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] text-center truncate py-0.5 pointer-events-none">
+                      {hero.name}
+                    </div>
                     {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-lime-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-lime-500 rounded-full flex items-center justify-center z-10">
                         <Check size={12} strokeWidth={4} className="text-white" />
                       </div>
                     )}
@@ -240,12 +243,19 @@ export default function TeamCompModal({ onClose }) {
             >
               {hero ? (
                 <div className="relative w-full h-full group">
-                  <img src={hero.portrait} alt={hero.name} className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 right-0 bg-black/60 p-0.5">
-                    <RoleIcon role={hero.role} />
+                  <img src={hero.portrait} alt={hero.name} className="w-full h-full object-cover block" />
+                  
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-between px-0.5 pointer-events-none">
+                    <span className="text-[9px] sm:text-[10px] text-white truncate flex-1 pl-0.5" title={hero.name}>
+                      {hero.name}
+                    </span>
+                    <div className="scale-75 shrink-0 origin-right">
+                      <RoleIcon role={hero.role} />
+                    </div>
                   </div>
+
                   <button 
-                    className="absolute inset-0 bg-red-600/60 hidden group-hover:flex items-center justify-center text-white text-xs font-bold transition-opacity"
+                    className="absolute inset-0 bg-red-600/60 hidden group-hover:flex items-center justify-center text-white text-xs font-bold transition-opacity z-10"
                     onClick={() => handleHeroToggle(team, hero)}
                   >
                     X
