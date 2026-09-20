@@ -10,6 +10,16 @@ export default function HelpModal({ isOpen, onClose, hideToolPopovers, onToggleT
     }
   }, [isOpen]);
 
+  // ESC key to close
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, doNotShowAgain]);
+
   const handleClose = () => {
     if (doNotShowAgain) {
       localStorage.setItem('hideHelpModal', 'true');

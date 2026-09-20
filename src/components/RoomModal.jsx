@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Copy, Eye, EyeOff } from 'lucide-react';
 
 const OW_HEROES = ['겐지', '트레이서', '라인하르트', '아나', '루시우', '디바', '윈스턴', '메르시', '캐서디', '솔저: 76', '위도우메이커', '한조', '정크랫', '바티스트', '키리코', '정커퀸', '라이프위버', '일리아리', '마우가', '벤처', '주노'];
@@ -6,6 +6,16 @@ const OW_HEROES = ['겐지', '트레이서', '라인하르트', '아나', '루�
 export default function RoomModal({ onJoin, onClose, generatedRoomId }) {
   const [nickname, setNickname] = useState('');
   const [showLink, setShowLink] = useState(false);
+
+  // ESC key to close
+  useEffect(() => {
+    if (!onClose) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleRandom = () => {
     const randomHero = OW_HEROES[Math.floor(Math.random() * OW_HEROES.length)];

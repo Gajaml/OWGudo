@@ -75,6 +75,15 @@ export default function TeamCompModal({ onClose }) {
     setTeam2Selected(t2);
   }, []);
 
+  // ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleHeroToggle = (team, hero) => {
     const selected = team === 'team1' ? team1Selected : team2Selected;
     const setSelected = team === 'team1' ? setTeam1Selected : setTeam2Selected;
