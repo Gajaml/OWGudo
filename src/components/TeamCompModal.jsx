@@ -202,7 +202,7 @@ export default function TeamCompModal({ onClose }) {
           {/* Hero List Dropdown */}
           {activeInput === team && (
             <div 
-              className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded shadow-xl z-20 max-h-60 overflow-y-auto grid grid-cols-5 sm:grid-cols-8 gap-2 p-3"
+              className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded shadow-xl z-20 max-h-60 overflow-y-auto grid grid-cols-5 sm:grid-cols-8 gap-x-2 gap-y-4 p-3"
               onClick={(e) => e.stopPropagation()}
             >
               {getFilteredList(team).map(hero => {
@@ -210,23 +210,25 @@ export default function TeamCompModal({ onClose }) {
                 return (
                   <div
                     key={hero.key}
-                    className={`relative cursor-pointer hover:scale-105 transition-transform rounded border-2 ${isSelected ? 'border-green-500' : 'border-slate-600'} ${isSelected ? 'opacity-100' : 'opacity-80 hover:opacity-100'} overflow-hidden`}
+                    className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform"
                     onClick={() => handleHeroToggle(team, hero)}
                   >
-                    <img 
-                      src={hero.portrait} 
-                      alt={hero.name} 
-                      className="w-full aspect-square object-cover block" 
-                      title={hero.name}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[10px] text-center truncate py-0.5 pointer-events-none">
+                    <div className={`relative w-full aspect-square rounded border-2 ${isSelected ? 'border-green-500 opacity-100' : 'border-slate-600 opacity-80 hover:opacity-100'} overflow-hidden`}>
+                      <img 
+                        src={hero.portrait} 
+                        alt={hero.name} 
+                        className="w-full h-full object-cover block" 
+                        title={hero.name}
+                      />
+                      {isSelected && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-lime-500 rounded-full flex items-center justify-center z-10">
+                          <Check size={12} strokeWidth={4} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="w-full mt-1 text-slate-300 text-[10px] text-center truncate px-0.5">
                       {hero.name}
                     </div>
-                    {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-lime-500 rounded-full flex items-center justify-center z-10">
-                        <Check size={12} strokeWidth={4} className="text-white" />
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -235,34 +237,38 @@ export default function TeamCompModal({ onClose }) {
         </div>
 
         {/* Selected Slots */}
-        <div className="flex gap-4 justify-center mt-4 z-10 relative">
+        <div className="flex gap-4 justify-center mt-6 z-10 relative">
           {slots.map((hero, idx) => (
-            <div 
-              key={idx} 
-              className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md border-2 ${borderColor} ${bgColor} flex items-center justify-center overflow-hidden`}
-            >
+            <div key={idx} className="flex flex-col items-center w-16 sm:w-20">
+              <div 
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md border-2 ${borderColor} ${bgColor} flex items-center justify-center overflow-hidden relative group`}
+              >
+                {hero ? (
+                  <>
+                    <img src={hero.portrait} alt={hero.name} className="w-full h-full object-cover block" />
+                    <button 
+                      className="absolute inset-0 bg-red-600/60 hidden group-hover:flex items-center justify-center text-white text-xs font-bold transition-opacity z-10"
+                      onClick={() => handleHeroToggle(team, hero)}
+                    >
+                      X
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-slate-500 text-xs">비어있음</span>
+                )}
+              </div>
+              
               {hero ? (
-                <div className="relative w-full h-full group">
-                  <img src={hero.portrait} alt={hero.name} className="w-full h-full object-cover block" />
-                  
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 flex items-center justify-between px-0.5 pointer-events-none">
-                    <span className="text-[9px] sm:text-[10px] text-white truncate flex-1 pl-0.5" title={hero.name}>
-                      {hero.name}
-                    </span>
-                    <div className="scale-75 shrink-0 origin-right">
-                      <RoleIcon role={hero.role} />
-                    </div>
+                <div className="w-full mt-1.5 flex items-center justify-center space-x-1 px-0.5">
+                  <div className="shrink-0 scale-75 opacity-80">
+                    <RoleIcon role={hero.role} />
                   </div>
-
-                  <button 
-                    className="absolute inset-0 bg-red-600/60 hidden group-hover:flex items-center justify-center text-white text-xs font-bold transition-opacity z-10"
-                    onClick={() => handleHeroToggle(team, hero)}
-                  >
-                    X
-                  </button>
+                  <span className="text-[10px] sm:text-[11px] text-slate-200 truncate leading-tight" title={hero.name}>
+                    {hero.name}
+                  </span>
                 </div>
               ) : (
-                <span className="text-slate-500 text-xs">비어있음</span>
+                <div className="w-full mt-1.5 h-4"></div>
               )}
             </div>
           ))}
