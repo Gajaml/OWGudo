@@ -3,7 +3,7 @@ import { createClient } from '@liveblocks/client';
 import { liveblocks } from '@liveblocks/zustand';
 
 export const client = createClient({
-  publicApiKey: import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY || "pk_dev_9CBHwK_6II6XJ4oBmJcUrNKz_BZ0hpFQQ-8IzC9hmQBCRHbe5mCldP50yI892w8w",
+  authEndpoint: "/api/liveblocks-auth",
 });
 
 export const useStore = create(
