@@ -142,6 +142,30 @@ export default function TeamCompModal({ onClose }) {
   const handleConfirm = () => {
     // 1. Create a deep copy of current heroes to update their properties
     const newHeroes = JSON.parse(JSON.stringify(heroes));
+
+    // Calculate center of current view
+    const stageScale = useStore.getState().stageScale || 1;
+    const stagePosition = useStore.getState().stagePosition || { x: 0, y: 0 };
+    const stageSize = useStore.getState().stageSize || { width: 800, height: 600 };
+    
+    const viewCenterX = (-stagePosition.x + stageSize.width / 2) / stageScale;
+    const viewCenterY = (-stagePosition.y + stageSize.height / 2) / stageScale;
+    
+    const formationBlue = [
+      { dx: -150, dy: 0 },
+      { dx: -250, dy: -80 },
+      { dx: -250, dy: 80 },
+      { dx: -350, dy: -80 },
+      { dx: -350, dy: 80 },
+    ];
+    
+    const formationRed = [
+      { dx: 150, dy: 0 },
+      { dx: 250, dy: -80 },
+      { dx: 250, dy: 80 },
+      { dx: 350, dy: -80 },
+      { dx: 350, dy: 80 },
+    ];
     
     // Function to apply selected team to store structure
     const applyToTeam = (teamStr, selectedList) => {
@@ -156,11 +180,29 @@ export default function TeamCompModal({ onClose }) {
       // reset them
       teamSlots.forEach(slot => { slot.heroName = null; slot.heroKey = null; });
       
+      const isBlue = teamStr === 'blue';
+      const formation = isBlue ? formationBlue : formationRed;
+
       sortedList.forEach((h, i) => {
         if (i < teamSlots.length) {
-          teamSlots[i].heroName = h.name;
-          teamSlots[i].heroKey = h.key;
-          teamSlots[i].role = h.role;
+          const slot = teamSlots[i];
+          slot.heroName = h.name;
+          slot.heroKey = h.key;
+          slot.role = h.role;
+          
+          // Place hero relative to the view center
+          if (formation[i]) {
+            slot.x = viewCenterX + formation[i].dx;
+            slot.y = viewCenterY + formation[i].dy;
+          }
+
+          // Reset statuses
+          slot.isDead = false;
+          slot.ultState = 'none';
+          slot.path = [];
+          slot.showPath = false;
+          slot.ultPercent = 0;
+          slot.stats = { e: 0, a: 0, d: 0 };
         }
       });
     };
