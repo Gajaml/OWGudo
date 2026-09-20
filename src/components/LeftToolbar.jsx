@@ -31,23 +31,23 @@ export default function LeftToolbar() {
   const toolDescriptions = {
     cursor: {
       desc: '영웅 아이콘을 선택해서 움직이는 기본 상태입니다.',
-      visual: '(왼편에는 영웅 아이콘 위에 십자 커서가 있고, 오른편에는 영웅이 살짝 움직이는 듯 잔상이 있음)'
+      visual: '/assets/tools/cursor.png'
     },
     pen: {
       desc: '자유롭게 선을 그어 이동 경로나 전술을 표시합니다.',
-      visual: '(마우스를 따라 자유롭게 궤적이 그려지는 모습)'
+      visual: '/assets/tools/pen.png'
     },
     rect: {
       desc: '드래그하여 사각형 영역을 표시합니다. (거점, 진형 등)',
-      visual: '(대각선으로 드래그하여 사각형이 생성되는 모습)'
+      visual: '/assets/tools/rect.png'
     },
     circle: {
       desc: '드래그하여 원형 영역을 표시합니다. (스킬 범위 등)',
-      visual: '(드래그하여 둥근 영역이 생성되는 모습)'
+      visual: '/assets/tools/circle.png'
     },
     eraser: {
       desc: '그려진 선이나 도형을 클릭하거나 드래그하여 지웁니다.',
-      visual: '(지우개가 선을 지나가며 지워지는 모습)'
+      visual: '/assets/tools/eraser.png'
     }
   };
 
@@ -65,6 +65,12 @@ export default function LeftToolbar() {
     if (newTool !== 'cursor') {
       setSelectedHeroId(null);
     }
+  };
+
+  const toggleToolPopovers = (hide) => {
+    setHideToolPopovers(hide);
+    localStorage.setItem('hideToolPopovers', hide ? 'true' : 'false');
+    if (hide) setClickedTool(null);
   };
 
   return (
@@ -126,22 +132,15 @@ export default function LeftToolbar() {
                   <p className="text-slate-300 text-xs mb-3 leading-relaxed">
                     {toolDescriptions[t.id].desc}
                   </p>
-                  <div className="bg-slate-900/80 rounded border border-slate-700/50 p-2 text-[10px] text-slate-400 italic text-center">
-                    {toolDescriptions[t.id].visual}
+                  <div className="bg-slate-900/80 rounded border border-slate-700/50 p-2 flex justify-center items-center overflow-hidden">
+                    <img src={toolDescriptions[t.id].visual} alt={`${t.label} 사용 예시`} className="max-h-24 w-auto object-contain" />
                   </div>
 
                   <div className="mt-3 flex items-center gap-2 border-t border-slate-700 pt-2">
                     <input 
                       type="checkbox" 
                       id={`hideTool-${t.id}`}
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        if (checked) {
-                          localStorage.setItem('hideToolPopovers', 'true');
-                          setHideToolPopovers(true);
-                          setClickedTool(null);
-                        }
-                      }} 
+                      onChange={(e) => toggleToolPopovers(e.target.checked)} 
                       className="rounded border-slate-600 bg-slate-700 w-3 h-3 accent-blue-500 cursor-pointer" 
                     />
                     <label htmlFor={`hideTool-${t.id}`} className="text-[10px] text-slate-400 cursor-pointer hover:text-slate-300">
@@ -169,7 +168,12 @@ export default function LeftToolbar() {
         </button>
       </div>
       
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <HelpModal 
+        isOpen={isHelpOpen} 
+        onClose={() => setIsHelpOpen(false)} 
+        hideToolPopovers={hideToolPopovers}
+        onToggleToolPopovers={toggleToolPopovers}
+      />
     </div>
   );
 }

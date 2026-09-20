@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
-export default function HelpModal({ isOpen, onClose }) {
+export default function HelpModal({ isOpen, onClose, hideToolPopovers, onToggleToolPopovers }) {
   const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+
+  // Sync state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setDoNotShowAgain(localStorage.getItem('hideHelpModal') === 'true');
+    }
+  }, [isOpen]);
 
   const handleClose = () => {
     if (doNotShowAgain) {
       localStorage.setItem('hideHelpModal', 'true');
+    } else {
+      localStorage.removeItem('hideHelpModal');
     }
     onClose();
   };
@@ -57,22 +66,34 @@ export default function HelpModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-6">
-          <label className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-300 cursor-pointer">
+        <div className="flex flex-col gap-2 mb-6 p-3 bg-slate-900/50 rounded-md border border-slate-700">
+          <h3 className="text-xs font-bold text-slate-400 mb-1">설정</h3>
+          <label className="flex items-center gap-2 text-sm text-slate-300 hover:text-white cursor-pointer">
             <input 
               type="checkbox" 
-              className="rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50"
+              className="rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50 w-4 h-4 accent-blue-500"
               checked={doNotShowAgain}
               onChange={(e) => setDoNotShowAgain(e.target.checked)}
             />
-            다시 보지 않기
+            이 시작 가이드 창 다시 보지 않기
           </label>
-          
+          <label className="flex items-center gap-2 text-sm text-slate-300 hover:text-white cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500/50 w-4 h-4 accent-blue-500"
+              checked={hideToolPopovers}
+              onChange={(e) => onToggleToolPopovers(e.target.checked)}
+            />
+            좌측 툴바 도구 설명 다시 보지 않기
+          </label>
+        </div>
+
+        <div className="flex justify-end">
           <button 
             onClick={handleClose}
             className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded font-medium transition-colors"
           >
-            시작하기
+            확인 및 시작하기
           </button>
         </div>
       </div>
