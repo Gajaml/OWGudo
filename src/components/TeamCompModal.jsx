@@ -101,7 +101,12 @@ export default function TeamCompModal({ onClose }) {
       if (hero.role === 'damage' && damageCount >= 2) return;
       if (hero.role === 'support' && supportCount >= 2) return;
 
-      setSelected([...selected, hero]);
+      const newSelected = [...selected, hero];
+      setSelected(newSelected);
+      
+      if (newSelected.length === 5) {
+        setActiveInput(null);
+      }
     }
   };
 
@@ -330,6 +335,18 @@ export default function TeamCompModal({ onClose }) {
               )}
             </div>
           ))}
+          
+          <button
+            className="absolute right-0 top-6 sm:top-8 -translate-y-1/2 px-3 py-1.5 bg-red-900/40 hover:bg-red-600 text-red-200 hover:text-white border border-red-700/50 rounded text-xs transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isTeam1) setTeam1Selected([]);
+              else setTeam2Selected([]);
+            }}
+            title="모든 영웅 선택 해제"
+          >
+            전체 제거
+          </button>
         </div>
       </div>
     );
