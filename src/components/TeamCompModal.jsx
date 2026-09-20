@@ -292,7 +292,14 @@ export default function TeamCompModal({ onClose }) {
           {slots.map((hero, idx) => (
             <div key={idx} className="flex flex-col items-center w-16 sm:w-20">
               <div 
-                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md border-2 ${borderColor} ${bgColor} flex items-center justify-center overflow-hidden relative group`}
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-md border-2 ${borderColor} ${bgColor} flex items-center justify-center overflow-hidden relative group ${!hero ? 'cursor-pointer hover:brightness-125' : ''}`}
+                onClick={(e) => {
+                  if (!hero) {
+                    e.stopPropagation();
+                    setActiveInput(team);
+                    setQuery('');
+                  }
+                }}
               >
                 {hero ? (
                   <>
