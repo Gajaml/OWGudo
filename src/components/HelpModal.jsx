@@ -42,34 +42,22 @@ export default function HelpModal({ isOpen, onClose, hideToolPopovers, onToggleT
           아래 단축키와 조작법으로 쉽게 구도를 만들어보세요!
         </p>
 
-        <div className="space-y-4 mb-6">
-          <div className="flex gap-3 bg-slate-700/50 p-3 rounded-md border border-slate-600/50">
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 bg-slate-700/50 p-4 rounded-md border border-slate-600/50">
             <div className="bg-blue-500/20 text-blue-400 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
-            <div>
-              <h3 className="font-semibold text-slate-100 text-sm mb-1">마우스 우클릭, 휠로 맵 이동</h3>
-              <p className="text-xs text-slate-400">화면 빈 공간을 우클릭한 채 드래그하거나, 휠을 굴려 맵 시점을 이동/확대할 수 있습니다.</p>
-            </div>
+            <h3 className="font-bold text-slate-100 text-base">마우스 우클릭, 휠: 맵 이동</h3>
           </div>
-          <div className="flex gap-3 bg-slate-700/50 p-3 rounded-md border border-slate-600/50">
+          <div className="flex items-center gap-3 bg-slate-700/50 p-4 rounded-md border border-slate-600/50">
             <div className="bg-red-500/20 text-red-400 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
-            <div>
-              <h3 className="font-semibold text-slate-100 text-sm mb-1">Q, W, E, R, T로 그림 도구 사용</h3>
-              <p className="text-xs text-slate-400">단축키를 눌러 좌측 툴바의 도구(선택, 펜, 사각형, 원형, 지우개)를 빠르게 전환합니다.</p>
-            </div>
+            <h3 className="font-bold text-slate-100 text-base">Q, W, E, R, T: 그림 도구 사용</h3>
           </div>
-          <div className="flex gap-3 bg-slate-700/50 p-3 rounded-md border border-slate-600/50">
+          <div className="flex items-center gap-3 bg-slate-700/50 p-4 rounded-md border border-slate-600/50">
             <div className="bg-green-500/20 text-green-400 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
-            <div>
-              <h3 className="font-semibold text-slate-100 text-sm mb-1">랜덤 배치, 조합 입력, 중앙 이동</h3>
-              <p className="text-xs text-slate-400">우상단 메뉴의 기능들을 활용해 복잡한 영웅 조합과 구도를 단번에 배치할 수 있습니다.</p>
-            </div>
+            <h3 className="font-bold text-slate-100 text-base">우상단 버튼: 조합 설정</h3>
           </div>
-          <div className="flex gap-3 bg-slate-700/50 p-3 rounded-md border border-slate-600/50">
+          <div className="flex items-center gap-3 bg-slate-700/50 p-4 rounded-md border border-slate-600/50">
             <div className="bg-purple-500/20 text-purple-400 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">4</div>
-            <div>
-              <h3 className="font-semibold text-slate-100 text-sm mb-1">1~0 숫자 키로 영웅 선택/이동</h3>
-              <p className="text-xs text-slate-400">1~5(블루), 6~0(레드) 키를 눌러 영웅을 즉시 선택하고 마우스로 위치를 옮길 수 있습니다.</p>
-            </div>
+            <h3 className="font-bold text-slate-100 text-base">마우스 좌클릭, 1~0 숫자키: 영웅 선택</h3>
           </div>
         </div>
 
