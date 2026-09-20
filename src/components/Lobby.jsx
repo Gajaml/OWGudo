@@ -3,54 +3,37 @@ import { useStore } from '../store';
 import { OW_MAPS_DATA } from '../mapsData';
 
 const ModeIcon = ({ mode }) => {
+  let iconName = '';
   switch (mode) {
     case '호위':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <path d="M6 3v18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          <path d="M11 5l9 7-9 7V5z" />
-        </svg>
-      );
+      iconName = 'escort';
+      break;
     case '혼합':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <circle cx="8" cy="12" r="5" />
-          <path d="M13 6.5l8 5.5-8 5.5z" />
-        </svg>
-      );
+      iconName = 'hybrid';
+      break;
     case '쟁탈':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <path d="M12 2l3.5 2.5v5L12 12l-3.5-2.5v-5L12 2zM6.5 11l3.5 2.5v5L6.5 21 3 18.5v-5L6.5 11zM17.5 11L21 13.5v5l-3.5 2.5-3.5-2.5v-5l3.5-2.5z" />
-        </svg>
-      );
+      iconName = 'control';
+      break;
     case '밀기':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <path d="M6 6l6 6-6 6V6zM18 6l-6 6 6 6V6z" />
-          <path d="M12 3v18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
-      );
+      iconName = 'push';
+      break;
     case '플래시포인트':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <circle cx="12" cy="12" r="3.5" />
-          <path d="M12 7 L9 2 h6 Z" />
-          <path d="M7.5 14.5 L1 15 l4 5 Z" />
-          <path d="M16.5 14.5 L23 15 l-4 5 Z" />
-        </svg>
-      );
+      iconName = 'flashpoint';
+      break;
     case '점령 (구 맵)':
-      return (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 mr-3 text-white">
-          <circle cx="6" cy="12" r="4.5" />
-          <circle cx="18" cy="12" r="4.5" />
-          <path d="M6 12h12" stroke="currentColor" strokeWidth="2" />
-        </svg>
-      );
+      iconName = 'assault';
+      break;
     default:
       return null;
   }
+  
+  return (
+    <img 
+      src={`/assets/modes/${iconName}.svg`} 
+      alt={`${mode} 아이콘`} 
+      className="w-7 h-7 mr-3 object-contain"
+    />
+  );
 };
 
 export default function Lobby() {
