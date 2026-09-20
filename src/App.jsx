@@ -11,7 +11,10 @@ function App() {
   const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage } = useStore();
   const [inRoom, setInRoom] = useState(false);
   const [isTeamCompOpen, setIsTeamCompOpen] = useState(false);
-  const roomId = new URLSearchParams(window.location.search).get("room");
+  
+  const [roomId, setRoomId] = useState(() => new URLSearchParams(window.location.search).get("room"));
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [pendingRoomId, setPendingRoomId] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -84,10 +87,44 @@ function App() {
     };
   }, [setTool, setSelectedHeroId, undo, redo, setPastedImage, setActiveTab]);
 
+  const handleCreateRoomRequest = () => {
+    const newRoomId = Math.random().toString(36).substring(2, 8);
+    setPendingRoomId(newRoomId);
+    setIsCreatingRoom(true);
+  };
+
   const handleJoin = (nickname) => {
     setInfo(nickname);
-    useStore.getState().liveblocks.enterRoom(roomId, { initialPresence: { cursor: null, info: nickname } });
+    const targetRoomId = isCreatingRoom ? pendingRoomId : roomId;
+    
+    if (isCreatingRoom) {
+      window.history.pushState({}, '', `/?room=${targetRoomId}`);
+      setRoomId(targetRoomId);
+      setIsCreatingRoom(false);
+      setPendingRoomId(null);
+    }
+    
+    useStore.getState().liveblocks.enterRoom(targetRoomId, { initialPresence: { cursor: null, info: nickname } });
     setInRoom(true);
+  };
+
+  const handleCloseModal = () => {
+    if (isCreatingRoom) {
+      setIsCreatingRoom(false);
+      setPendingRoomId(null);
+    } else if (roomId && !inRoom) {
+      window.history.pushState({}, '', '/');
+      setRoomId(null);
+    }
+  };
+
+  const handleLeaveRoom = () => {
+    if (roomId && inRoom) {
+      useStore.getState().liveblocks.leaveRoom(roomId);
+    }
+    setInRoom(false);
+    setRoomId(null);
+    window.history.pushState({}, '', '/');
   };
 
   useEffect(() => {
@@ -98,13 +135,19 @@ function App() {
     };
   }, [roomId, inRoom]);
 
-  const isJoining = roomId && !inRoom;
+  const isJoining = (roomId && !inRoom) || isCreatingRoom;
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-900 text-slate-100 overflow-hidden font-sans">
-      {isJoining && <RoomModal onJoin={handleJoin} />}
+      {isJoining && <RoomModal onJoin={handleJoin} onClose={handleCloseModal} generatedRoomId={isCreatingRoom ? pendingRoomId : null} />}
       {isTeamCompOpen && <TeamCompModal onClose={() => setIsTeamCompOpen(false)} />}
-      <TopOptionsBar roomId={roomId} inRoom={inRoom} onOpenTeamComp={() => setIsTeamCompOpen(true)} />
+      <TopOptionsBar 
+        roomId={roomId} 
+        inRoom={inRoom} 
+        onOpenTeamComp={() => setIsTeamCompOpen(true)} 
+        onCreateRoomRequest={handleCreateRoomRequest}
+        onLeaveRoom={handleLeaveRoom}
+      />
       <div className="flex flex-1 overflow-hidden">
         <LeftToolbar />
         <main className="flex-1 relative bg-slate-800 overflow-hidden">

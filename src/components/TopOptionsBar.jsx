@@ -12,7 +12,7 @@ const VALID_HEROES = [
 
 import { OW_MAPS_DATA } from '../mapsData';
 
-export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
+export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreateRoomRequest, onLeaveRoom }) {
   const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, setToolColor, heroes, setHeroes, activeTab, setActiveTab } = useStore();
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
@@ -30,8 +30,9 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
   }, [currentStrokeWidth, tool]);
 
   const handleCreateRoom = () => {
-    const newRoomId = Math.random().toString(36).substring(2, 8);
-    window.location.href = `/?room=${newRoomId}`;
+    if (onCreateRoomRequest) {
+      onCreateRoomRequest();
+    }
   };
 
   const handleCopyLink = () => {
@@ -271,9 +272,13 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp }) {
       <div className="flex items-center space-x-3">
         {inRoom ? (
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-emerald-400 font-bold bg-slate-800 px-3 py-1.5 rounded border border-emerald-900" title="방 코드">
-              코드: {roomId}
-            </span>
+            <button 
+              onClick={onLeaveRoom}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-red-600 hover:bg-red-500 text-white transition-colors"
+              title="방 나가기"
+            >
+              <span>🚪 방 나가기</span>
+            </button>
             <button 
               onClick={handleCopyLink}
               className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-green-600 hover:bg-green-500 text-white transition-colors"
