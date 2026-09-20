@@ -3,7 +3,7 @@ import { Group, Circle, Text, Arc, Image as KonvaImage } from 'react-konva';
 import { useStore } from '../store';
 
 export default function HeroNode({ hero }) {
-  const { selectedHeroId, setSelectedHeroId, updateHero, tool, heroIconScale } = useStore();
+  const { selectedHeroId, setSelectedHeroId, updateHero, tool, heroIconScale, stageRotation } = useStore();
   const isSelected = selectedHeroId === hero.id;
   const [image, setImage] = useState(null);
 
@@ -84,6 +84,7 @@ export default function HeroNode({ hero }) {
       onClick={handleClick}
       onTap={handleClick}
       opacity={opacity}
+      rotation={-(stageRotation || 0)}
     >
       {/* Selection Outer Glow / Border */}
       {isSelected && (
