@@ -17,6 +17,7 @@ export const OW_MAPS_DATA = [
   { id: 'oasis', name: '오아시스' },
   { id: 'rialto', name: '리알토' },
   { id: 'route-66', name: '66번 국도' },
+  { id: 'samoa', name: '사모아' },
   { id: 'suravasa', name: '수라바사' },
   { id: 'watchpoint-gibraltar', name: '감시 기지: 지브롤터' },
 
