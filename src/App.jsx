@@ -6,9 +6,10 @@ import RightPropertiesPanel from './components/RightPropertiesPanel';
 import MapCanvas from './components/MapCanvas';
 import RoomModal from './components/RoomModal';
 import TeamCompModal from './components/TeamCompModal';
+import Lobby from './components/Lobby';
 
 function App() {
-  const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage } = useStore();
+  const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage, map } = useStore();
   const [inRoom, setInRoom] = useState(false);
   const [isTeamCompOpen, setIsTeamCompOpen] = useState(false);
   
@@ -166,11 +167,17 @@ function App() {
         onLeaveRoom={handleLeaveRoom}
       />
       <div className="flex flex-1 overflow-hidden">
-        <LeftToolbar />
-        <main className="flex-1 relative bg-slate-800 overflow-hidden">
-          <MapCanvas />
-        </main>
-        <RightPropertiesPanel />
+        {map === null ? (
+          <Lobby />
+        ) : (
+          <>
+            <LeftToolbar />
+            <main className="flex-1 relative bg-slate-800 overflow-hidden">
+              <MapCanvas />
+            </main>
+            <RightPropertiesPanel />
+          </>
+        )}
       </div>
     </div>
   );

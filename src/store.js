@@ -21,7 +21,7 @@ export const useStore = create(
       heroIconScale: 100,
       setHeroIconScale: (scale) => set({ heroIconScale: scale }),
 
-      map: 'blizzard-world',
+      map: null,
       setMap: (map) => set({ map }),
 
       // Camera State

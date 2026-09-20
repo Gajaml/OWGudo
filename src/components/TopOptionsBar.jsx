@@ -148,7 +148,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
     setHeroes(newHeroes);
   };
 
-  const showThickness = tool !== 'cursor';
+  const showThickness = tool !== 'cursor' && map !== null;
   const eraserMode = useStore((state) => state.eraserMode);
   const setEraserMode = useStore((state) => state.setEraserMode);
 
@@ -176,9 +176,14 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
         {activeTab === 'map' && (
           <select 
             className="bg-slate-800 text-sm border border-slate-600 rounded px-3 py-1.5 focus:outline-none focus:border-indigo-500 text-white shrink-0"
-            value={map}
-            onChange={(e) => setMap(e.target.value)}
+            value={map || ''}
+            onChange={(e) => {
+              if (e.target.value === 'lobby') setMap(null);
+              else setMap(e.target.value);
+            }}
           >
+            <option value="" disabled hidden>맵 선택</option>
+            <option value="lobby">--- 로비로 돌아가기 ---</option>
             {maps.map(m => (
               <option key={m.id} value={m.id} disabled={m.isDivider}>
                 {m.name}
@@ -296,30 +301,34 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
             <span>🌐 방 만들기</span>
           </button>
         )}
-        <div className="h-6 w-px bg-slate-700 mx-1"></div>
-        <button 
-          onClick={handleRandomize}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
-          title="영웅/위치 랜덤 배치"
-        >
-          <Dices size={16} />
-          <span>랜덤 배치</span>
-        </button>
-        <button 
-          onClick={onOpenTeamComp}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors"
-          title="조합 입력"
-        >
-          <span>조합 입력</span>
-        </button>
-        <button 
-          onClick={handleMoveToCenter}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-sky-600 hover:bg-sky-500 text-white transition-colors"
-          title="현재 위치로 영웅 이동"
-        >
-          <Move size={16} />
-          <span>중앙으로 이동</span>
-        </button>
+        {map !== null && (
+          <>
+            <div className="h-6 w-px bg-slate-700 mx-1"></div>
+            <button 
+              onClick={handleRandomize}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+              title="영웅/위치 랜덤 배치"
+            >
+              <Dices size={16} />
+              <span>랜덤 배치</span>
+            </button>
+            <button 
+              onClick={onOpenTeamComp}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+              title="조합 입력"
+            >
+              <span>조합 입력</span>
+            </button>
+            <button 
+              onClick={handleMoveToCenter}
+              className="flex items-center space-x-2 px-3 py-1.5 text-sm rounded bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+              title="현재 위치로 영웅 이동"
+            >
+              <Move size={16} />
+              <span>중앙으로 이동</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
