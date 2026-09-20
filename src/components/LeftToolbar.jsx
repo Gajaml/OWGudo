@@ -12,7 +12,7 @@ export default function LeftToolbar() {
     { id: 'cursor', icon: MousePointer2, label: '선택', shortcut: 'Q' },
     { id: 'pen', icon: PenTool, label: '펜', shortcut: 'W' },
     { id: 'rect', icon: Square, label: '사각형', shortcut: 'E' },
-    { id: 'circle', icon: Circle, label: '원형', shortcut: 'R' },
+    { id: 'circle', icon: Circle, label: '원/타원', shortcut: 'R' },
     { id: 'eraser', icon: Eraser, label: '지우개', shortcut: 'T' },
   ];
 
@@ -42,7 +42,7 @@ export default function LeftToolbar() {
       visual: '/assets/tools/rect.png'
     },
     circle: {
-      desc: '드래그하여 원형 영역을 표시합니다. (스킬 범위 등)',
+      desc: '드래그하여 원형 또는 타원형 영역을 표시합니다. (스킬 범위 등)',
       visual: '/assets/tools/circle.png'
     },
     eraser: {

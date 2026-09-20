@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Rect, Line, Circle as KonvaCircle, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage } from 'react-konva';
 import { useStore } from '../store';
 import HeroNode from './HeroNode';
 import { OW_MAPS_DATA } from '../mapsData';
@@ -198,9 +198,12 @@ export default function MapCanvas() {
       setCurrentShape({ 
         id, 
         type: 'circle', 
+        startX: pos.x,
+        startY: pos.y,
         x: pos.x, 
         y: pos.y, 
-        radius: 0,
+        radiusX: 0,
+        radiusY: 0,
         strokeWidth: currentStrokeWidth,
         stroke: toolSettings[tool]?.color || '#eab308',
         globalCompositeOperation: 'source-over'
@@ -241,11 +244,12 @@ export default function MapCanvas() {
       }));
     } else if (tool === 'circle') {
       setCurrentShape(prev => {
-        const dx = pos.x - prev.x;
-        const dy = pos.y - prev.y;
         return {
           ...prev,
-          radius: Math.sqrt(dx * dx + dy * dy)
+          x: (prev.startX + pos.x) / 2,
+          y: (prev.startY + pos.y) / 2,
+          radiusX: Math.abs(pos.x - prev.startX) / 2,
+          radiusY: Math.abs(pos.y - prev.startY) / 2
         };
       });
     }
@@ -290,6 +294,10 @@ export default function MapCanvas() {
     } else if (shape.type === 'rect') {
       return <Rect key={shape.id} x={shape.x} y={shape.y} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     } else if (shape.type === 'circle') {
+      if (shape.radiusX !== undefined && shape.radiusY !== undefined) {
+        return <KonvaEllipse key={shape.id} x={shape.x} y={shape.y} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
+      }
+      // Fallback for older shapes
       return <KonvaCircle key={shape.id} x={shape.x} y={shape.y} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
     }
     return null;
