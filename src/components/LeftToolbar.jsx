@@ -104,13 +104,13 @@ export default function LeftToolbar() {
               {isClicked && (
                 <div 
                   className={`absolute left-16 ml-2 w-64 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-50 p-4 animate-in fade-in zoom-in duration-200 ${
-                    t.id === 'cursor' ? 'top-0' : 'top-1/2 -translate-y-1/2'
+                    ['cursor', 'pen'].includes(t.id) ? 'top-0' : 'top-1/2 -translate-y-1/2'
                   }`}
                 >
                   {/* 말풍선 꼬리 */}
                   <div 
                     className={`absolute -left-2 w-0 h-0 border-y-8 border-y-transparent border-r-8 border-r-slate-600 ${
-                      t.id === 'cursor' ? 'top-6 -translate-y-1/2' : 'top-1/2 -translate-y-1/2'
+                      ['cursor', 'pen'].includes(t.id) ? 'top-6 -translate-y-1/2' : 'top-1/2 -translate-y-1/2'
                     }`}
                   >
                     <div className="absolute -top-[7px] -left-[6px] w-0 h-0 border-y-[7px] border-y-transparent border-r-[7px] border-r-slate-800" />
