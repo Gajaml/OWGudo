@@ -21,12 +21,38 @@ function App() {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         return;
       }
-      const toolMap = { '1': 'cursor', '2': 'pen', '3': 'rect', '4': 'circle', '5': 'eraser' };
-      if (toolMap[e.key]) {
-        const newTool = toolMap[e.key];
+      const toolMap = { 'q': 'cursor', 'w': 'pen', 'e': 'rect', 'r': 'circle', 't': 'eraser' };
+      if (toolMap[e.key.toLowerCase()]) {
+        const newTool = toolMap[e.key.toLowerCase()];
         setTool(newTool);
         if (newTool !== 'cursor') setSelectedHeroId(null);
+        return;
       }
+
+      const heroKeyMap = {
+        '1': 'b1', '2': 'b2', '3': 'b3', '4': 'b4', '5': 'b5',
+        '6': 'r1', '7': 'r2', '8': 'r3', '9': 'r4', '0': 'r5'
+      };
+      if (heroKeyMap[e.key]) {
+        const heroId = heroKeyMap[e.key];
+        const state = useStore.getState();
+        const hero = state.heroes.find(h => h.id === heroId);
+        if (hero && hero.heroName) {
+          state.setTool('cursor');
+          state.setSelectedHeroId(heroId);
+          
+          const width = state.stageSize.width || window.innerWidth;
+          const height = state.stageSize.height || window.innerHeight;
+          const scale = state.stageScale;
+          
+          state.setStagePosition({
+            x: width / 2 - hero.x * scale,
+            y: height / 2 - hero.y * scale
+          });
+        }
+        return;
+      }
+
       if (e.ctrlKey && e.key.toLowerCase() === 'z') {
         if (e.shiftKey) redo(); else undo();
       }

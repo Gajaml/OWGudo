@@ -13,11 +13,11 @@ export default function LeftToolbar() {
   };
 
   const tools = [
-    { id: 'cursor', icon: MousePointer2, label: '선택', shortcut: '1' },
-    { id: 'pen', icon: PenTool, label: '펜', shortcut: '2' },
-    { id: 'rect', icon: Square, label: '사각형', shortcut: '3' },
-    { id: 'circle', icon: Circle, label: '원형', shortcut: '4' },
-    { id: 'eraser', icon: Eraser, label: '지우개', shortcut: '5' },
+    { id: 'cursor', icon: MousePointer2, label: '선택', shortcut: 'Q' },
+    { id: 'pen', icon: PenTool, label: '펜', shortcut: 'W' },
+    { id: 'rect', icon: Square, label: '사각형', shortcut: 'E' },
+    { id: 'circle', icon: Circle, label: '원형', shortcut: 'R' },
+    { id: 'eraser', icon: Eraser, label: '지우개', shortcut: 'T' },
   ];
 
   return (
