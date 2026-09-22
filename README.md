@@ -1,15 +1,10 @@
-# React + Vite
+# 옵구도 / OWGudo
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+옵구도는 오버워치 구도를 재현할 수 있는 탑뷰 웹 뷰어입니다.
 
-Currently, two official plugins are available:
+## 경로
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+owgudo.vercel.app
 
 ## Expanding the Oxlint configuration
 
