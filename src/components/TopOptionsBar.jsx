@@ -205,7 +205,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
   return (
     <div className="h-14 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6 shrink-0">
       <div className="flex items-center space-x-4">
-        <span className="font-bold text-lg tracking-wide text-orange-500 shrink-0">OW Planner</span>
+        <span className="font-bold text-lg tracking-wide text-orange-500 shrink-0">옵구도</span>
         <div className="h-6 w-px bg-slate-700 mx-2 shrink-0"></div>
         
         <div className="flex bg-slate-800 rounded p-1 shrink-0">
