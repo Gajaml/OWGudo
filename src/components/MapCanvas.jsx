@@ -1,34 +1,87 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Group, Rect, Line, Circle as KonvaCircle, Ellipse as KonvaEllipse, Image as KonvaImage, Transformer } from 'react-konva';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Stage, Layer, Group, Line, Image as KonvaImage, Transformer } from 'react-konva';
+import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../store';
 import HeroNode from './HeroNode';
+import DrawingShape from './DrawingShape';
+import RemoteCursors from './RemoteCursors';
 import { OW_MAPS_DATA } from '../mapsData';
 
+// 영웅 경로 색상 (슬롯별 고정)
+const PATH_COLORS = {
+  'b1': '#06b6d4', // Cyan
+  'b2': '#3b82f6', // Blue
+  'b3': '#6366f1', // Indigo
+  'b4': '#a855f7', // Purple
+  'b5': '#14b8a6', // Teal
+  'r1': '#ef4444', // Red
+  'r2': '#f97316', // Orange
+  'r3': '#eab308', // Yellow
+  'r4': '#ec4899', // Pink
+  'r5': '#f43f5e', // Rose
+};
+
+// 방에 접속해 있을 때만 커서 위치를 공유한다.
+// (방 밖에서도 매 마우스 이동마다 스토어를 갱신하면 불필요한 상태 변경이 계속 발생함)
+const isInRoom = () => !!useStore.getState().liveblocks?.room;
+
 export default function MapCanvas() {
-  const { 
-    tool, 
-    setTool,
-    map, 
-    toolSettings, 
-    heroes, 
-    drawings, 
-    addDrawing, 
-    updateDrawing,
-    setSelectedHeroId,
+  // 필요한 값만 구독한다. 내 커서(cursor)와 다른 사람 목록(others)은 구독하지 않으므로
+  // 마우스를 움직여도 캔버스 전체가 다시 렌더링되지 않는다.
+  const {
+    tool,
+    map,
+    toolSettings,
+    heroes,
+    drawings,
     stageScale,
-    setStageScale,
     stagePosition,
-    setStagePosition,
     stageSize,
-    setStageSize,
     stageRotation,
-    setStageRotation,
-    setMapCenter,
-    removeDrawing,
     eraserMode,
     activeTab,
-    pastedImage
-  } = useStore();
+    pastedImage,
+  } = useStore(
+    useShallow((s) => ({
+      tool: s.tool,
+      map: s.map,
+      toolSettings: s.toolSettings,
+      heroes: s.heroes,
+      drawings: s.drawings,
+      stageScale: s.stageScale,
+      stagePosition: s.stagePosition,
+      stageSize: s.stageSize,
+      stageRotation: s.stageRotation,
+      eraserMode: s.eraserMode,
+      activeTab: s.activeTab,
+      pastedImage: s.pastedImage,
+    }))
+  );
+  const {
+    setTool,
+    addDrawing,
+    updateDrawing,
+    removeDrawing,
+    setSelectedHeroId,
+    setStageScale,
+    setStagePosition,
+    setStageSize,
+    setStageRotation,
+    setMapCenter,
+  } = useStore(
+    useShallow((s) => ({
+      setTool: s.setTool,
+      addDrawing: s.addDrawing,
+      updateDrawing: s.updateDrawing,
+      removeDrawing: s.removeDrawing,
+      setSelectedHeroId: s.setSelectedHeroId,
+      setStageScale: s.setStageScale,
+      setStagePosition: s.setStagePosition,
+      setStageSize: s.setStageSize,
+      setStageRotation: s.setStageRotation,
+      setMapCenter: s.setMapCenter,
+    }))
+  );
   
   const currentStrokeWidth = tool !== 'cursor' ? (toolSettings[tool]?.strokeWidth || 3) : 3;
 
@@ -308,8 +361,9 @@ export default function MapCanvas() {
     const stage = e.target.getStage();
     const pos = getRelativePointerPosition(stage);
     
-    // throttle sending cursor slightly or just send it
-    useStore.getState().setCursor({ x: pos.x, y: pos.y });
+    if (isInRoom()) {
+      useStore.getState().setCursor({ x: pos.x, y: pos.y });
+    }
 
     if (panState.isDragging) {
       if (panState.isRotating) {
@@ -389,100 +443,36 @@ export default function MapCanvas() {
   };
 
   const handleMouseLeave = () => {
-    useStore.getState().setCursor(null);
+    if (isInRoom()) {
+      useStore.getState().setCursor(null);
+    }
   };
 
-  // Render a shape object
-  const renderShape = (shape, ref = null) => {
-    const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
-    const canBeSelected = shape.type === 'rect' || shape.type === 'circle';
-    const isSelectable = tool === 'cursor' && canBeSelected;
-    const isSelected = selectedShapeId === shape.id;
-    
-    const handleShapeDoubleClick = (e) => {
-      if (canBeSelected && tool !== 'cursor') {
-        setTool('cursor');
-        setSelectedShapeId(shape.id);
-        e.cancelBubble = true;
-      }
-    };
+  // 그림 도형에 넘기는 콜백은 한 번만 만들어 재사용한다.
+  // (매 렌더링마다 새 함수를 넘기면 memo가 무력화되어 모든 도형이 다시 그려짐)
+  const handleShapeSelect = useCallback((id) => setSelectedShapeId(id), []);
+  const handleShapeDoubleClickSelect = useCallback((id) => {
+    setTool('cursor');
+    setSelectedShapeId(id);
+  }, [setTool]);
 
-    const commonProps = {
-      id: shape.id,
-      stroke: shape.globalCompositeOperation === 'destination-out' ? 'black' : (shape.stroke || '#eab308'), 
-      strokeWidth: shape.strokeWidth || 3,
-      globalCompositeOperation: shape.globalCompositeOperation || 'source-over',
-      listening: isObjectEraser || canBeSelected, 
-      draggable: isSelected,
-      onDblClick: handleShapeDoubleClick,
-      onDblTap: handleShapeDoubleClick,
-      onPointerDown: (e) => {
-        if (isObjectEraser) {
-          removeDrawing(shape.id);
-        } else if (isSelectable) {
-          setSelectedShapeId(shape.id);
-        }
-      },
-      onPointerEnter: (e) => {
-        if (e.evt.buttons === 1 && isObjectEraser) removeDrawing(shape.id);
-      },
-      onDragEnd: (e) => {
-        updateDrawing(shape.id, {
-          x: e.target.x(),
-          y: e.target.y()
-        });
-      },
-      onTransformEnd: (e) => {
-        const node = e.target;
-        const scaleX = node.scaleX();
-        const scaleY = node.scaleY();
-        node.scaleX(1);
-        node.scaleY(1);
-        
-        if (shape.type === 'rect') {
-          updateDrawing(shape.id, {
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(5, node.width() * scaleX),
-            height: Math.max(5, node.height() * scaleY),
-            rotation: node.rotation()
-          });
-        } else if (shape.type === 'circle') {
-          updateDrawing(shape.id, {
-            x: node.x(),
-            y: node.y(),
-            radiusX: Math.max(5, (shape.radiusX || shape.radius) * scaleX),
-            radiusY: Math.max(5, (shape.radiusY || shape.radius) * scaleY),
-            rotation: node.rotation()
-          });
-        }
-      }
-    };
-    
-    // Add existing properties
-    if (shape.rotation) commonProps.rotation = shape.rotation;
-    // For rect/line, x and y might not be present or handled differently
-    if (shape.type !== 'line') {
-      commonProps.x = shape.x;
-      commonProps.y = shape.y;
-    }
+  const isObjectEraser = tool === 'eraser' && eraserMode === 'object';
+  const isCursorTool = tool === 'cursor';
 
-    if (shape.type === 'line') {
-      return <Line key={shape.id} ref={ref} points={shape.points} {...commonProps} tension={0.5} lineCap="round" lineJoin="round" hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
-    } else if (shape.type === 'rect') {
-      return <Rect key={shape.id} ref={ref} width={shape.width} height={shape.height} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
-    } else if (shape.type === 'circle') {
-      if (shape.radiusX !== undefined && shape.radiusY !== undefined) {
-        return <KonvaEllipse key={shape.id} ref={ref} radiusX={shape.radiusX} radiusY={shape.radiusY} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
-      }
-      // Fallback for older shapes
-      return <KonvaCircle key={shape.id} ref={ref} radius={shape.radius} {...commonProps} hitStrokeWidth={Math.max(15, shape.strokeWidth)} />;
-    }
-    return null;
-  };
-
-  // Liveblocks presence
-  const others = useStore((state) => state.liveblocks?.others) || [];
+  const renderShape = (shape, nodeRef = null) => (
+    <DrawingShape
+      key={shape.id}
+      shape={shape}
+      nodeRef={nodeRef}
+      isObjectEraser={isObjectEraser}
+      isCursorTool={isCursorTool}
+      isSelected={selectedShapeId === shape.id}
+      onSelect={handleShapeSelect}
+      onDoubleClickSelect={handleShapeDoubleClickSelect}
+      onRemove={removeDrawing}
+      onUpdate={updateDrawing}
+    />
+  );
 
   // Listen to cameraSync
   const cameraSync = useStore((state) => state.cameraSync);
@@ -509,95 +499,11 @@ export default function MapCanvas() {
         </div>
       )}
 
-      {/* Multiplayer Cursors Overlay */}
-      {others.map((other) => {
-        const pivotX = mapImages.length > 0 ? mapDimensions.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
-        const pivotY = mapImages.length > 0 ? mapDimensions.height / 2 : (customBgImage ? customBgImage.height / 2 : 540);
-        if (other.presence?.cursor == null) return null;
-        
-        // Map local canvas coordinates to absolute screen coordinates
-        const { x, y } = other.presence.cursor;
-        
-        let dx = x - pivotX;
-        let dy = y - pivotY;
-        const angle = (stageRotation * Math.PI) / 180;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const rx = dx * cos - dy * sin;
-        const ry = dx * sin + dy * cos;
-        const worldX = rx + pivotX;
-        const worldY = ry + pivotY;
-
-        const domX = worldX * stageScale + stagePosition.x;
-        const domY = worldY * stageScale + stagePosition.y;
-        
-        // Check if cursor is off-screen
-        const isOffScreen = 
-          domX < 0 || 
-          domX > (stageSize.width || window.innerWidth) || 
-          domY < 0 || 
-          domY > (stageSize.height || window.innerHeight);
-
-        // Unique color based on connectionId
-        const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
-        const color = colors[other.connectionId % colors.length];
-
-        if (isOffScreen) {
-          // Calculate clamped position
-          const padding = 20;
-          const clampedX = Math.max(padding, Math.min((stageSize.width || window.innerWidth) - padding, domX));
-          const clampedY = Math.max(padding, Math.min((stageSize.height || window.innerHeight) - padding, domY));
-          
-          // Calculate angle for the arrow
-          const centerX = (stageSize.width || window.innerWidth) / 2;
-          const centerY = (stageSize.height || window.innerHeight) / 2;
-          const angle = Math.atan2(domY - centerY, domX - centerX) * (180 / Math.PI);
-
-          return (
-            <div
-              key={other.connectionId}
-              className="absolute pointer-events-none z-50 transition-transform duration-[25ms] ease-out flex flex-col items-center"
-              style={{
-                transform: `translate(${clampedX - 12}px, ${clampedY - 12}px)`,
-              }}
-            >
-              <div style={{ transform: `rotate(${angle}deg)` }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="drop-shadow-md">
-                  <path d="M12 2L22 12L12 22" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M2 12H22" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div 
-                className="mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white whitespace-nowrap shadow-md opacity-80"
-                style={{ backgroundColor: color }}
-              >
-                {other.presence.info || "익명"}
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div
-            key={other.connectionId}
-            className="absolute pointer-events-none z-50 transition-transform duration-[25ms] ease-out"
-            style={{
-              transform: `translate(${domX}px, ${domY}px)`,
-            }}
-          >
-            {/* Custom SVG Arrow */}
-            <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="white" strokeWidth="2" className="drop-shadow-md">
-              <path d="M5.65 2.11L21.75 18.21C22.61 19.07 22.04 20.5 20.82 20.5H14.1L12.56 26.69C12.35 27.53 11.23 27.7 10.74 26.96L1.87 13.67C1.19 12.65 1.54 11.23 2.59 10.62L12.06 5.16C13.2 4.5 14.54 5.3 14.57 6.61L14.7 10.9L5.65 2.11Z" fill={color} />
-            </svg>
-            <div 
-              className="mt-1 px-2 py-0.5 rounded-full text-xs font-bold text-white whitespace-nowrap shadow-md opacity-90 inline-block"
-              style={{ backgroundColor: color }}
-            >
-              {other.presence.info || "익명"}
-            </div>
-          </div>
-        );
-      })}
+      {/* Multiplayer Cursors Overlay: 다른 사람 커서는 별도 컴포넌트에서 구독·렌더링 */}
+      <RemoteCursors
+        pivotX={mapImages.length > 0 ? mapDimensions.width / 2 : (customBgImage ? customBgImage.width / 2 : 960)}
+        pivotY={mapImages.length > 0 ? mapDimensions.height / 2 : (customBgImage ? customBgImage.height / 2 : 540)}
+      />
 
       {(() => {
         const pivotX = mapImages.length > 0 ? mapDimensions.width / 2 : (customBgImage ? customBgImage.width / 2 : 960);
@@ -656,20 +562,7 @@ export default function MapCanvas() {
             // Anchor to hero center, then reverse path so dashes are static relative to the hero
             const flatPoints = [hero.x, hero.y, ...hero.path.slice().reverse().flatMap(p => [p.x, p.y])];
             
-            // Distinct colors for each of the 10 slots for high visibility
-            const pathColors = {
-              'b1': '#06b6d4', // Cyan
-              'b2': '#3b82f6', // Blue
-              'b3': '#6366f1', // Indigo
-              'b4': '#a855f7', // Purple
-              'b5': '#14b8a6', // Teal
-              'r1': '#ef4444', // Red
-              'r2': '#f97316', // Orange
-              'r3': '#eab308', // Yellow
-              'r4': '#ec4899', // Pink
-              'r5': '#f43f5e', // Rose
-            };
-            const strokeColor = pathColors[hero.id] || '#ef4444';
+            const strokeColor = PATH_COLORS[hero.id] || '#ef4444';
 
             return (
               <React.Fragment key={`path_${hero.id}`}>
