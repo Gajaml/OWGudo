@@ -80,12 +80,17 @@ export default function MapCanvas() {
           const validImages = loadedImages.filter(img => img !== null);
           if (validImages.length === 0) return;
           
+          // 축소본 이미지는 논리 크기(원본 좌표계)로 늘려서 배치한다.
+          // logicalSize가 없는 맵(다층 맵 등)은 이미지 원래 크기를 그대로 쓴다.
+          const logical = validImages.length === 1 ? mapObj.logicalSize : null;
           let currentY = 0;
           let maxWidth = 0;
           const imageObjects = validImages.map(img => {
-            const obj = { img, yOffset: currentY };
-            currentY += img.height;
-            if (img.width > maxWidth) maxWidth = img.width;
+            const width = logical ? logical.width : img.width;
+            const height = logical ? logical.height : img.height;
+            const obj = { img, yOffset: currentY, width, height };
+            currentY += height;
+            if (width > maxWidth) maxWidth = width;
             return obj;
           });
           
@@ -616,7 +621,7 @@ export default function MapCanvas() {
         <Layer>
           <Group ref={worldGroupRef} rotation={stageRotation} x={pivotX} y={pivotY} offsetX={pivotX} offsetY={pivotY}>
           {activeTab === 'map' && mapImages.map((obj, i) => (
-            <KonvaImage key={i} image={obj.img} x={0} y={obj.yOffset} opacity={0.6} />
+            <KonvaImage key={i} image={obj.img} x={0} y={obj.yOffset} width={obj.width} height={obj.height} opacity={0.6} />
           ))}
           {customBgImage && activeTab === 'import' && (
             <KonvaImage image={customBgImage} x={0} y={0} opacity={0.8} />

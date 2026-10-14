@@ -1,3 +1,20 @@
+// 맵 좌표계(논리 크기).
+// 영웅 위치·그림 좌표는 원본 미니맵의 픽셀 단위로 저장되어 있다.
+// 미니맵 파일은 용량/메모리 절감을 위해 축소본(webp)을 쓰지만,
+// 화면에는 이 논리 크기로 늘려 그려서 기존 방 데이터의 좌표가 그대로 맞도록 한다.
+// 원본 이미지는 assets-original/minimaps 에 보관되어 있다.
+const WIDE = { width: 10000, height: 5000 };   // 축소본 4096x2048
+const SQUARE = { width: 5000, height: 5000 };  // 축소본 3500x3500
+const LOGICAL_SIZES = {
+  'busan': WIDE, 'ilios': WIDE, 'lijiang-tower': WIDE, 'nepal': WIDE, 'oasis': WIDE,
+  'blizzard-world': SQUARE, 'eichenwalde': SQUARE, 'hollywood': SQUARE, 'kings-row': SQUARE,
+  'numbani': SQUARE, 'dorado': SQUARE, 'havana': SQUARE, 'junkertown': SQUARE, 'rialto': SQUARE,
+  'route-66': SQUARE, 'watchpoint-gibraltar': SQUARE, 'hanamura': SQUARE,
+  'horizon-lunar-colony': SQUARE, 'paris': SQUARE, 'temple-of-anubis': SQUARE,
+  'volskaya-industries': SQUARE,
+  // samoa(1000x1686)와 다층 맵은 원본 크기 그대로 사용하므로 지정하지 않음
+};
+
 export const OW_MAPS_DATA = [
   // --- 플래시포인트 (Flashpoint) ---
   { id: 'aatlis', name: '아틀리스', prefix: 'Aatlis', layers: 5, mode: '플래시포인트' },
@@ -43,6 +60,7 @@ export const OW_MAPS_DATA = [
   { id: 'volskaya-industries', name: '볼스카야 인더스트리', mode: '점령 (구 맵)' }
 ].map(m => ({ 
   ...m, 
-  file: m.layers ? `${m.prefix}-1.webp` : `${m.id}.jpg`,
-  files: m.layers ? Array.from({ length: m.layers }, (_, i) => `${m.prefix}-${i + 1}.webp`) : undefined
+  file: m.layers ? `${m.prefix}-1.webp` : `${m.id}.webp`,
+  files: m.layers ? Array.from({ length: m.layers }, (_, i) => `${m.prefix}-${i + 1}.webp`) : undefined,
+  logicalSize: LOGICAL_SIZES[m.id]
 }));
