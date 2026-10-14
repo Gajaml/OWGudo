@@ -1,4 +1,5 @@
 import React from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../store';
 import { Trash2, Dices, Move } from 'lucide-react';
 import { OW_HEROES_DATA } from '../heroData';
@@ -13,7 +14,20 @@ const VALID_HEROES = [
 import { OW_MAPS_DATA } from '../mapsData';
 
 export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreateRoomRequest, onLeaveRoom }) {
-  const { map, setMap, clearDrawings, tool, toolSettings, setToolStrokeWidth, setToolColor, heroes, setHeroes, activeTab, setActiveTab } = useStore();
+  // 화면 표시에 필요한 값만 구독한다. heroes는 버튼을 누를 때만 필요하므로 구독하지 않는다
+  // (구독하면 영웅을 드래그하는 동안 상단 바가 계속 다시 렌더링됨).
+  const { map, tool, toolSettings, activeTab } = useStore(
+    useShallow((s) => ({ map: s.map, tool: s.tool, toolSettings: s.toolSettings, activeTab: s.activeTab }))
+  );
+  const { setMap, setToolStrokeWidth, setToolColor, setHeroes, setActiveTab } = useStore(
+    useShallow((s) => ({
+      setMap: s.setMap,
+      setToolStrokeWidth: s.setToolStrokeWidth,
+      setToolColor: s.setToolColor,
+      setHeroes: s.setHeroes,
+      setActiveTab: s.setActiveTab,
+    }))
+  );
 
   const [maps, setMaps] = React.useState(OW_MAPS_DATA);
   const currentStrokeWidth = tool !== 'cursor' ? (toolSettings[tool]?.strokeWidth || 10) : 10;
@@ -45,7 +59,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
 
   const handleRandomize = () => {
     // 1. Create a deep copy of the heroes array
-    const newHeroes = JSON.parse(JSON.stringify(heroes));
+    const newHeroes = JSON.parse(JSON.stringify(useStore.getState().heroes));
     const usedKeys = [];
 
     // 2. Helper to get a random valid hero
@@ -114,7 +128,7 @@ export default function TopOptionsBar({ roomId, inRoom, onOpenTeamComp, onCreate
   };
 
   const handleMoveToCenter = () => {
-    const newHeroes = JSON.parse(JSON.stringify(heroes));
+    const newHeroes = JSON.parse(JSON.stringify(useStore.getState().heroes));
     
     // Calculate center of current view
     const stageScale = useStore.getState().stageScale || 1;

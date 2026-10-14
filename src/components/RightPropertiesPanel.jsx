@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../store';
 import { OW_HEROES_DATA } from '../heroData';
 
@@ -8,8 +9,21 @@ const ROLE_NAMES = {
   support: '지원'
 };
 
+const heroPanelKey = (h) => [
+  h.id, h.team, h.role, h.heroName, h.heroKey, h.playerName,
+  h.stats?.e, h.stats?.a, h.stats?.d, h.ultPercent, h.isDead, h.floor, h.ultState, h.showPath,
+].join('|');
+
 export default function RightPropertiesPanel() {
-  const { heroes, selectedHeroId, updateHero, heroIconScale, setHeroIconScale } = useStore();
+  const { selectedHeroId, heroIconScale } = useStore(
+    useShallow((s) => ({ selectedHeroId: s.selectedHeroId, heroIconScale: s.heroIconScale }))
+  );
+  // 패널은 영웅의 위치(x, y, path)를 표시하지 않는다. 표시하는 값만으로 만든 키를 구독해서
+  // 영웅을 드래그하는 동안에는 패널이 다시 렌더링되지 않도록 한다.
+  useStore(useShallow((s) => s.heroes.map(heroPanelKey)));
+  const heroes = useStore.getState().heroes;
+  const updateHero = useStore((s) => s.updateHero);
+  const setHeroIconScale = useStore((s) => s.setHeroIconScale);
   const [activeDropdown, setActiveDropdown] = useState(null); // id of the slot
   const [iconScaleInput, setIconScaleInput] = useState(heroIconScale?.toString() || '100');
 

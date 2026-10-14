@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Group, Circle, Text, Arc, Image as KonvaImage } from 'react-konva';
+import React, { useState, useEffect, memo } from 'react';
+import { Group, Circle, Text, Image as KonvaImage } from 'react-konva';
 import { useStore } from '../store';
 
-export default function HeroNode({ hero }) {
-  const { selectedHeroId, setSelectedHeroId, updateHero, tool, heroIconScale, stageRotation } = useStore();
-  const isSelected = selectedHeroId === hero.id;
+// memo: 부모(MapCanvas)가 다시 렌더링되어도 이 영웅의 데이터(hero)가 그대로면 건너뛴다.
+// 영웅 하나를 드래그하면 그 영웅만 다시 그려진다.
+function HeroNode({ hero }) {
+  // "내가 선택됐는지" 여부만 구독 → 다른 영웅을 선택해도 나머지 영웅은 다시 렌더링되지 않음
+  const isSelected = useStore((s) => s.selectedHeroId === hero.id);
+  const tool = useStore((s) => s.tool);
+  const heroIconScale = useStore((s) => s.heroIconScale);
+  const stageRotation = useStore((s) => s.stageRotation);
+  const setSelectedHeroId = useStore((s) => s.setSelectedHeroId);
+  const updateHero = useStore((s) => s.updateHero);
   const [image, setImage] = useState(null);
 
   useEffect(() => {
@@ -195,3 +202,5 @@ export default function HeroNode({ hero }) {
     </Group>
   );
 }
+
+export default memo(HeroNode);

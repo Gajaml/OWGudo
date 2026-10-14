@@ -4,7 +4,9 @@ import { MousePointer2, PenTool, Square, Circle, Eraser, RotateCw } from 'lucide
 import HelpModal from './HelpModal';
 
 export default function LeftToolbar() {
-  const { tool, setTool, setSelectedHeroId } = useStore();
+  const tool = useStore((s) => s.tool);
+  const setTool = useStore((s) => s.setTool);
+  const setSelectedHeroId = useStore((s) => s.setSelectedHeroId);
 
 
 

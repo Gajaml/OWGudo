@@ -58,7 +58,8 @@ function RoleIcon({ role }) {
 }
 
 export default function TeamCompModal({ onClose }) {
-  const { heroes, setHeroes } = useStore();
+  // heroes는 모달을 열 때와 확인을 누를 때만 필요하므로 구독하지 않고 그때그때 읽는다.
+  const setHeroes = useStore((s) => s.setHeroes);
   const [team1Selected, setTeam1Selected] = useState([]);
   const [team2Selected, setTeam2Selected] = useState([]);
   
@@ -67,6 +68,7 @@ export default function TeamCompModal({ onClose }) {
 
   // Extract initial heroes from store
   useEffect(() => {
+    const heroes = useStore.getState().heroes;
     const t1 = heroes.filter(h => h.team === 'blue' && h.heroKey).map(h => ALL_HEROES.find(a => a.key === h.heroKey)).filter(Boolean);
     const t2 = heroes.filter(h => h.team === 'red' && h.heroKey).map(h => ALL_HEROES.find(a => a.key === h.heroKey)).filter(Boolean);
     // Don't pre-fill if we just want to start empty or whatever, but prepopulating is nice
@@ -146,7 +148,7 @@ export default function TeamCompModal({ onClose }) {
 
   const handleConfirm = () => {
     // 1. Create a deep copy of current heroes to update their properties
-    const newHeroes = JSON.parse(JSON.stringify(heroes));
+    const newHeroes = JSON.parse(JSON.stringify(useStore.getState().heroes));
 
     // Calculate center of current view
     const stageScale = useStore.getState().stageScale || 1;

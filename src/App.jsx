@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useStore } from './store';
 import LeftToolbar from './components/LeftToolbar';
 import TopOptionsBar from './components/TopOptionsBar';
@@ -9,7 +10,19 @@ import TeamCompModal from './components/TeamCompModal';
 import Lobby from './components/Lobby';
 
 function App() {
-  const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage, map } = useStore();
+  // 필요한 값만 구독: map이 바뀔 때만 App이 다시 렌더링된다. (액션 함수는 바뀌지 않음)
+  const map = useStore((s) => s.map);
+  const { setTool, setSelectedHeroId, undo, redo, setInfo, setActiveTab, setPastedImage } = useStore(
+    useShallow((s) => ({
+      setTool: s.setTool,
+      setSelectedHeroId: s.setSelectedHeroId,
+      undo: s.undo,
+      redo: s.redo,
+      setInfo: s.setInfo,
+      setActiveTab: s.setActiveTab,
+      setPastedImage: s.setPastedImage,
+    }))
+  );
   const [inRoom, setInRoom] = useState(false);
   const [isTeamCompOpen, setIsTeamCompOpen] = useState(false);
   
